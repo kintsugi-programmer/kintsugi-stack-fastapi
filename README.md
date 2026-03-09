@@ -1,6 +1,9 @@
 # kintsugi-stack-fastapi
 
-# FastAPI Comprehensive Guide: Photo & Video Sharing API
+ FastAPI Comprehensive Guide: Photo & Video Sharing API
+
+![alt text](unnamed.png)
+
 - Source: https://www.youtube.com/watch?v=SR5NYCdzKkc
 
 ## Project Overview
@@ -156,10 +159,44 @@ FastAPI automatically generates comprehensive documentation allowing you to exec
 ![alt text](image-7.png)
 ![alt text](image-8.png)
 
+
+
+```python
+from fastapi import FastAPI 
+
+application = FastAPI()
+
+@application.get("/hello-world")
+def hello_world():
+    return {"message":"hello world !!!"}
+
+text_posts = {
+    1 : {"title":"new post", "content": "cool test post"}
+}
+
+@application.get("/posts")
+def get_all_posts():
+    return text_posts
+```
+```python
+import uvicorn
+
+def main():
+    print("Hello from kintsugi-stack-fastapi!")
+    uvicorn.run("src.app:application",host="0.0.0.0",port=8000,reload=True)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+![alt text](image-9.png)
+![alt text](image-10.png)
+
 ## Routing and Parameters
 
 ### Path Parameters
-Path parameters are dynamic values placed in the URL (enclosed in curly braces `{}`) to filter specific resources. Providing Python type hints (e.g., `id: int`) enables FastAPIs automatic data validation; it will reject invalid data types.
+Path parameters are dynamic values placed in the URL (enclosed in curly braces `{}`) to filter specific resources. Providing Python type hints (e.g., `id: int`) enables ` FastAPIs automatic data validation; it will reject invalid data types`.
 
 ```python
 from fastapi import HTTPException
@@ -173,16 +210,62 @@ def get_post(id: int):
     return text_posts.get(id)
 ```
 
+```python
+from fastapi import FastAPI, HTTPException
+
+application = FastAPI()
+
+@application.get("/hello-world")
+def hello_world():
+    return {"message":"hello world !!!"}
+
+# text_posts = {
+#     1 : {"title":"new post", "content": "cool test post"}
+# }
+
+text_posts = {
+    1: {"title": "Morning Coffee", "content": "Started the day with a strong cup of coffee."},
+    2: {"title": "Learning FastAPI", "content": "Building my first API with FastAPI today."},
+    3: {"title": "Debugging Code", "content": "Spent an hour fixing a small bug."},
+    4: {"title": "New Project Idea", "content": "Thinking about building a health tech platform."},
+    5: {"title": "Database Setup", "content": "Installed PostgreSQL and created a new database."},
+    6: {"title": "API Testing", "content": "Testing endpoints using Postman."},
+    7: {"title": "Late Night Coding", "content": "Still coding at midnight."},
+    8: {"title": "Learning Git", "content": "Practicing commits and branches today."},
+    9: {"title": "Reading Docs", "content": "Reading FastAPI documentation."},
+    10: {"title": "Weekend Build", "content": "Working on a small backend project."}
+}
+
+@application.get("/posts")
+def get_all_posts():
+    return text_posts
+
+@application.get("/post/{id}")
+def get_post(id:int):
+    if id not in text_posts:
+        raise HTTPException(status_code=404, detail="post not found")
+    return text_posts.get(id)
+
+
+
+```
+
+![alt text](image-11.png)
+
 ### Query Parameters
 Query parameters are optional or mandatory variables passed directly into the endpoint function. Assigning a default value (like `None`) makes them optional.
 
 ```python
-@app.get("/posts")
-def get_all_posts(limit: int | None = None):
+@application.get("/posts")
+def get_all_posts(limit: int = None): # here parameter is written because FastAPI will Auto Document it and Validate it
     if limit:
-        return list(text_posts.values())[:limit]
-    return list(text_posts.values())
+            return list(text_posts.values())[:limit]
+    return text_posts
 ```
+
+![alt text](image-12.png)
+
+> FastAPI automatically validates all data going into and coming out of the function
 
 ## Pydantic Schemas and Data Validation
 
@@ -198,7 +281,7 @@ class PostCreate(BaseModel):
     content: str
 ```
 
-When importing and using this schema in an endpoint, FastAPI strictly validates that incoming request bodies match the schema types before executing the function.
+When importing and using this schema in an endpoint, FastAPI strictly validates that ``incoming request bodies match the schema`` types ``before executing the function``.
 
 ```python
 # app.py
@@ -214,6 +297,22 @@ def create_post(post: PostCreate):
 
 ### Response Models
 Specifying a response type using an arrow `->` or the `response_model` parameter improves API documentation (showing exact return formats in `/docs`) and adds a layer of protection. If the function attempts to return data missing fields defined in the response schema, FastAPI automatically raises an error.
+
+---
+```py
+# schemas.py
+from pydantic import BaseModel # BaseModel is special Func. in Python with Special Features
+
+class PostCreate(BaseModel):
+    title: str
+    content: str
+
+class PostResponse(BaseModel):
+    title: str
+    content: str
+```
+
+
 
 ## Database Setup (SQLAlchemy)
 
