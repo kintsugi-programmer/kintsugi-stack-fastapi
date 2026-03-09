@@ -29,14 +29,14 @@ text_posts = {
 # def get_all_posts():
 #     return text_posts
 
-@application.get("/post/{id}")
-def get_post(id:int):
+@application.get("/post/{id}") 
+def get_post(id:int)-> PostResponse:
     if id not in text_posts:
         raise HTTPException(status_code=404, detail="post not found")
     return text_posts.get(id)
 
 @application.get("/posts")
-def get_all_posts(limit: int = None)  -> PostResponse: # here parameter is written because FastAPI will Auto Document it and Validate it
+def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it
     if limit:
             return list(text_posts.values())[:limit]
     return text_posts
