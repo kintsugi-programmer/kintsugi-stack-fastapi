@@ -74,6 +74,7 @@ It is highly recommended to use **PyCharm** for heavy Python projects due to its
 python3 -m venv .venv  # creates a virtual environment
 source .venv/bin/activate  # activates the virtual environment
 pip install uv  # installs a package with pip
+pip install -r requirements.txt
 ```
 ```bash
 uv init .  # initializes project metadata files
@@ -383,6 +384,7 @@ from sqlalchemy.orm import DeclarativeBase, relationship  # imports ORM base and
 
 class Base(DeclarativeBase):  # declares a class used by the app
     pass  # shows this line as part of the example output
+# we can't directly use declarative_base() because we need to use it in async way, so we create a class that inherits from DeclarativeBase and then we can use it to create our models
 
 class Post(Base):  # declares a class used by the app
     __tablename__ = "post"  # assigns value for later use
@@ -435,6 +437,105 @@ async def lifespan(app: FastAPI):  # declares an async endpoint/helper
     yield  # shows this line as part of the example output
 
 app = FastAPI(lifespan=lifespan)  # creates the FastAPI application instance
+```
+
+> if `test.db` is generated, our db unfinished script is working
+---
+```py
+# db.py
+from collections.abc import AsyncGenerator
+from datetime import datetime
+import uuid 
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.orm import DeclarativeBase, relationship
+
+DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+
+class Base(DeclarativeBase): # we can't directly use declarative_base() because we need to use it in async way, so we create a class that inherits from DeclarativeBase and then we can use it to create our models
+    pass
+
+class Post(Base):
+    __tablename__ = "posts"
+    id = Column(UUID(as_uuid=True),primary_key=True, default=uuid.uuid4)
+    caption = Column(Text)
+    url = Column(String, nullable=False)
+    file_type = Column(String, nullable= False)
+    file_name = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+engine = create_async_engine(DATABASE_URL)
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+
+async def create_db_and_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
+
+
+```
+```py
+# app.py
+from fastapi import FastAPI, HTTPException
+from src.schemas import PostCreate, PostResponse
+from src.db import Post, create_db_and_tables, get_async_session
+from sqlalchemy.ext.asyncio import AsyncSession
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_db_and_tables()
+    yield
+
+application = FastAPI(lifespan=lifespan)
+
+@application.get("/hello-world")
+def hello_world():
+    return {"message":"hello world !!!"}
+
+# text_posts = {
+#     1 : {"title":"new post", "content": "cool test post"}
+# }
+
+text_posts = {
+    1: {"title": "Morning Coffee", "content": "Started the day with a strong cup of coffee."},
+    2: {"title": "Learning FastAPI", "content": "Building my first API with FastAPI today."},
+    3: {"title": "Debugging Code", "content": "Spent an hour fixing a small bug."},
+    4: {"title": "New Project Idea", "content": "Thinking about building a health tech platform."},
+    5: {"title": "Database Setup", "content": "Installed PostgreSQL and created a new database."},
+    6: {"title": "API Testing", "content": "Testing endpoints using Postman."},
+    7: {"title": "Late Night Coding", "content": "Still coding at midnight."},
+    8: {"title": "Learning Git", "content": "Practicing commits and branches today."},
+    9: {"title": "Reading Docs", "content": "Reading FastAPI documentation."},
+    10: {"title": "Weekend Build", "content": "Working on a small backend project."}
+}
+
+# @application.get("/posts")
+# def get_all_posts():
+#     return text_posts
+
+@application.get("/post/{id}") 
+def get_post(id:int)-> PostResponse:
+    if id not in text_posts:
+        raise HTTPException(status_code=404, detail="post not found")
+    return text_posts.get(id)
+
+@application.get("/posts")
+def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it
+    if limit:
+            return list(text_posts.values())[:limit]
+    return text_posts
+
+@application.post("/post")
+def create_post(post_body: PostCreate) -> PostResponse : # validates incoming (PostCreate) and Outgoing (PostResponse), if not valid so raise error
+    new_id = max(text_posts.keys()) + 1
+    new_post = { "title": post_body.title , "content" : post_body.content }
+    text_posts[new_id] = new_post
+    return new_post
 ```
 
 ## Handling Image and Video Uploads
