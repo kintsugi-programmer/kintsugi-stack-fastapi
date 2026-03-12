@@ -1,6 +1,6 @@
 # kintsugi-stack-fastapi
 
- FastAPI Comprehensive Guide: Photo & Video Sharing API
+> FastAPI Comprehensive Guide: Photo & Video Sharing API
 
 ![alt text](unnamed.png)
 
