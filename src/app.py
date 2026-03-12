@@ -1,13 +1,14 @@
 # app.py
-from fastapi import FastAPI, HTTPException, File, UploadFile, Depends
+from fastapi import FastAPI, HTTPException, File, UploadFile, Depends, Form
 from src.schemas import PostCreate, PostResponse
 from src.db import Post, create_db_and_tables, get_async_session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_db_and_tables()
+    await create_db_and_tables() # create db for us, and make sure  this is essentially handled correctly and cleanly . at time of exit, it will close the connection to the database, so that we don't have any connection leaks, and we can ensure that our application is properly cleaned up when it shuts down.
     yield
 
 application = FastAPI(lifespan=lifespan)
@@ -36,10 +37,23 @@ async def upload_file(
 async def get_feed(
     session: AsyncSession = Depends(get_async_session)
 ):
-    result = await session.execute(select(Post).orderby(Post.created_at.desc())) # like select * from posts order by created_at desc, it will return a list of Post objects
-    posts = [row[0] for row in result.all()]
+    result = await session.execute(select(Post).order_by(Post.created_at.desc())) # like select * from posts order by created_at desc, it will return a list of Post objects
+    posts = [row[0] for row in result.all()] # result.all() will return a list of tuples, where each tuple contains a single Post object, so we need to extract the Post object from the tuple using row[0]
+    # cursor object is returned by the database, and we need to convert it to a list of Post objects, so that we can return it as a response
 
     posts_data = []
+    for post in posts:
+        posts_data.append({
+            "id":str(post.id),
+            "caption":post.caption,
+            "url":post.url,
+            "file_type":post.file_type,
+            "file_name":post.file_name,
+            "created_at":post.created_at.isoformat()
+        })
+    
+    return {"posts": posts_data}
+
     
 
 
