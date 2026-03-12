@@ -41,6 +41,7 @@
     - [CRUD Operations (Create, Read, Delete)](#crud-operations-create-read-delete)
     - [Retrieving Data (Read)](#retrieving-data-read)
     - [Deleting Data](#deleting-data)
+    - [Code(s)](#codes)
   - [User Authentication (FastAPI Users)](#user-authentication-fastapi-users)
     - [Database Relationships](#database-relationships)
     - [JWT Strategy and User Manager](#jwt-strategy-and-user-manager)
@@ -772,6 +773,8 @@ async def delete_post(post_id: str, session: AsyncSession = Depends(get_async_se
         raise HTTPException(status_code=500, detail=str(e))  # returns an HTTP error for invalid request
 ```
 
+### Code(s)
+
 ---
 
 next part
@@ -1132,6 +1135,37 @@ async def get_feed(
 #     return new_post
 
 ```
+
+---
+
+next part
+
+Just Delete API
+```py
+@application.delete("/post/{post_id}")
+async def delete_post(
+    post_id: str,
+    session: AsyncSession = Depends(get_async_session)
+    ):
+    try: 
+        post_uuid = uuid.UUID(post_id) # convert the post_id string to a UUID object, if the post_id is not a valid UUID, it will raise a ValueError, so we need to handle that exception and return a 400 Bad Request error to the client, because the client has sent an invalid post_id, so we need to inform them about the error in their request
+        result = await session.execute(select(Post).where(Post.id == post_uuid))  # like select * from posts where id = post_id, it will return a list of Post objects that match the condition, but since id is unique, it will return either one Post object or None
+        post = result.scalars().first() # scalars() will return a list of Post objects, and first() will return the first Post object from the list, or None if the list is empty
+
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+
+        await session.delete(post) # like delete from posts where id = post_id, it will delete the post from the database, but we need to commit the transaction to make sure that the changes are saved to the database, so we need to call session.commit() after deleting the post
+        await session.commit()
+        return {"success":True, "message":"Post deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+![alt text](image-27.png)
+![alt text](image-28.png) Deleted Success
+
+![alt text](image-29.png) Not won't shown in GET
 
 ## User Authentication (FastAPI Users)
 
