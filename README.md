@@ -6,6 +6,49 @@
 
 - Source: https://www.youtube.com/watch?v=SR5NYCdzKkc
 
+## Table of contents
+- [kintsugi-stack-fastapi](#kintsugi-stack-fastapi)
+  - [Table of contents](#table-of-contents)
+  - [Project Overview](#project-overview)
+  - [Core Concepts of Web Apps and APIs](#core-concepts-of-web-apps-and-apis)
+    - [What is an API?](#what-is-an-api)
+    - [URLs and Endpoints](#urls-and-endpoints)
+    - [The Request and Response Structure](#the-request-and-response-structure)
+    - [JWT Authentication Primer](#jwt-authentication-primer)
+  - [Environment and Setup](#environment-and-setup)
+    - [Project Initialization](#project-initialization)
+    - [Installing Dependencies](#installing-dependencies)
+    - [Environment Variables (.env)](#environment-variables-env)
+  - [Creating the FastAPI Application](#creating-the-fastapi-application)
+    - [Scaffolding](#scaffolding)
+    - [Creating Your First Endpoint](#creating-your-first-endpoint)
+    - [Running the Server with Uvicorn](#running-the-server-with-uvicorn)
+    - [Interactive Documentation](#interactive-documentation)
+  - [Routing and Parameters](#routing-and-parameters)
+    - [Path Parameters](#path-parameters)
+    - [Query Parameters](#query-parameters)
+  - [Pydantic Schemas and Data Validation](#pydantic-schemas-and-data-validation)
+    - [Request Bodies](#request-bodies)
+    - [Response Models](#response-models)
+  - [Database Setup (SQLAlchemy)](#database-setup-sqlalchemy)
+    - [Creating Data Models](#creating-data-models)
+    - [Async Engine and Session Initialization](#async-engine-and-session-initialization)
+    - [Lifespan Context Manager](#lifespan-context-manager)
+  - [Handling Image and Video Uploads](#handling-image-and-video-uploads)
+    - [Integrating ImageKit](#integrating-imagekit)
+    - [File Upload Endpoint](#file-upload-endpoint)
+  - [CRUD Operations (Create, Read, Delete)](#crud-operations-create-read-delete)
+    - [Retrieving Data (Read)](#retrieving-data-read)
+    - [Deleting Data](#deleting-data)
+  - [User Authentication (FastAPI Users)](#user-authentication-fastapi-users)
+    - [Database Relationships](#database-relationships)
+    - [JWT Strategy and User Manager](#jwt-strategy-and-user-manager)
+    - [Injecting Auth Routes](#injecting-auth-routes)
+    - [Protecting Endpoints](#protecting-endpoints)
+  - [ImageKit API URL Transformations](#imagekit-api-url-transformations)
+  - [Front-End Integration (Streamlit context)](#front-end-integration-streamlit-context)
+
+
 ## Project Overview
 This project involves building a production-grade, back-end API for a photo and video sharing application, similar to the early days of Instagram. The application allows users to sign in, view a feed of photos and videos (with dates and posting users), and upload media. The backend handles advanced concepts including authentication, authorization, logging in users, connecting to a database, and handling file uploads.
 
@@ -725,6 +768,167 @@ async def delete_post(post_id: str, session: AsyncSession = Depends(get_async_se
     except Exception as e:  # handles unexpected runtime errors
         raise HTTPException(status_code=500, detail=str(e))  # returns an HTTP error for invalid request
 ```
+
+---
+
+next part
+
+```py
+# db.py
+from collections.abc import AsyncGenerator
+from datetime import datetime
+import uuid 
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.orm import DeclarativeBase, relationship
+
+DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+
+class Base(DeclarativeBase): # we can't directly use declarative_base() because we need to use it in async way, so we create a class that inherits from DeclarativeBase and then we can use it to create our models
+    pass
+
+class Post(Base):
+    __tablename__ = "posts"
+    id = Column(UUID(as_uuid=True),primary_key=True, default=uuid.uuid4)
+    caption = Column(Text)
+    url = Column(String, nullable=False)
+    file_type = Column(String, nullable= False)
+    file_name = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+engine = create_async_engine(DATABASE_URL)
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+
+async def create_db_and_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
+
+
+```
+```py
+# app.py
+from fastapi import FastAPI, HTTPException, File, UploadFile, Depends, Form
+from src.schemas import PostCreate, PostResponse
+from src.db import Post, create_db_and_tables, get_async_session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_db_and_tables() # create db for us, and make sure  this is essentially handled correctly and cleanly . at time of exit, it will close the connection to the database, so that we don't have any connection leaks, and we can ensure that our application is properly cleaned up when it shuts down.
+    yield
+
+application = FastAPI(lifespan=lifespan)
+
+@application.post("/upload") # using async, fastapi is async framework
+async def upload_file(
+    file: UploadFile = File(...),
+    caption: str = Form(""),
+    session: AsyncSession = Depends(get_async_session) # FastAPI Dependency Injection, it will automatically create a new session for each request and close it after the request is done
+) : 
+    post = Post( # dummy post 
+        caption = caption,
+        url = "dummy url",
+        file_type = "photo",
+        file_name = "dummy name"
+    )
+
+    session.add(post) # like staging, post is added to session but not saved
+    await session.commit() # like commit, saving the post to the database
+    # id and created_at are generated by the database, so we need to refresh the post object to get the updated data from the database, because after commit, the post object is not updated with the data from the database, so we need to refresh it to get the id of the post
+    # after commit, the post object is not updated with the data from the database, so we need to refresh it to get the id of the post
+    await session.refresh(post) # like refresh, refreshing the post object with the data from the database, so that we can get the id of the post
+    return post
+
+@application.get("/feed")
+async def get_feed(
+    session: AsyncSession = Depends(get_async_session)
+):
+    result = await session.execute(select(Post).order_by(Post.created_at.desc())) # like select * from posts order by created_at desc, it will return a list of Post objects
+    posts = [row[0] for row in result.all()] # result.all() will return a list of tuples, where each tuple contains a single Post object, so we need to extract the Post object from the tuple using row[0]
+    # cursor object is returned by the database, and we need to convert it to a list of Post objects, so that we can return it as a response
+
+    posts_data = []
+    for post in posts:
+        posts_data.append({
+            "id":str(post.id),
+            "caption":post.caption,
+            "url":post.url,
+            "file_type":post.file_type,
+            "file_name":post.file_name,
+            "created_at":post.created_at.isoformat()
+        })
+    
+    return {"posts": posts_data}
+
+    
+
+
+# old stuff rewamp
+
+# @application.get("/hello-world")
+# def hello_world():
+#     return {"message":"hello world !!!"}
+
+# # text_posts = {
+# #     1 : {"title":"new post", "content": "cool test post"}
+# # }
+
+# text_posts = {
+#     1: {"title": "Morning Coffee", "content": "Started the day with a strong cup of coffee."},
+#     2: {"title": "Learning FastAPI", "content": "Building my first API with FastAPI today."},
+#     3: {"title": "Debugging Code", "content": "Spent an hour fixing a small bug."},
+#     4: {"title": "New Project Idea", "content": "Thinking about building a health tech platform."},
+#     5: {"title": "Database Setup", "content": "Installed PostgreSQL and created a new database."},
+#     6: {"title": "API Testing", "content": "Testing endpoints using Postman."},
+#     7: {"title": "Late Night Coding", "content": "Still coding at midnight."},
+#     8: {"title": "Learning Git", "content": "Practicing commits and branches today."},
+#     9: {"title": "Reading Docs", "content": "Reading FastAPI documentation."},
+#     10: {"title": "Weekend Build", "content": "Working on a small backend project."}
+# }
+
+# # @application.get("/posts")
+# # def get_all_posts():
+# #     return text_posts
+
+# @application.get("/post/{id}") 
+# def get_post(id:int)-> PostResponse:
+#     if id not in text_posts:
+#         raise HTTPException(status_code=404, detail="post not found")
+#     return text_posts.get(id)
+
+# @application.get("/posts")
+# def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it
+#     if limit:
+#             return list(text_posts.values())[:limit]
+#     return text_posts
+
+# @application.post("/post")
+# def create_post(post_body: PostCreate) -> PostResponse : # validates incoming (PostCreate) and Outgoing (PostResponse), if not valid so raise error
+#     new_id = max(text_posts.keys()) + 1
+#     new_post = { "title": post_body.title , "content" : post_body.content }
+#     text_posts[new_id] = new_post
+#     return new_post
+```
+
+uploading sample document
+![alt text](image-15.png)
+![alt text](image-16.png)
+
+even if we exit application, db get saved, once we restart application, db gets restored !!!
+
+after reopning the application, db restored, and get api worked !!!
+![alt text](image-17.png)
+
+---
+
+next part
 
 ## User Authentication (FastAPI Users)
 
