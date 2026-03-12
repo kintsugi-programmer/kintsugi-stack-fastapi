@@ -34,10 +34,11 @@
     - [Creating Data Models](#creating-data-models)
     - [Async Engine and Session Initialization](#async-engine-and-session-initialization)
     - [Lifespan Context Manager](#lifespan-context-manager)
-  - [Handling Image and Video Uploads](#handling-image-and-video-uploads)
+  - [Handling Image and Video Uploads \& CRUD Operations (Create, Read, Delete)](#handling-image-and-video-uploads--crud-operations-create-read-delete)
+    - [Handling Image and Video Uploads](#handling-image-and-video-uploads)
     - [Integrating ImageKit](#integrating-imagekit)
     - [File Upload Endpoint](#file-upload-endpoint)
-  - [CRUD Operations (Create, Read, Delete)](#crud-operations-create-read-delete)
+    - [CRUD Operations (Create, Read, Delete)](#crud-operations-create-read-delete)
     - [Retrieving Data (Read)](#retrieving-data-read)
     - [Deleting Data](#deleting-data)
   - [User Authentication (FastAPI Users)](#user-authentication-fastapi-users)
@@ -583,7 +584,9 @@ def create_post(post_body: PostCreate) -> PostResponse : # validates incoming (P
     return new_post
 ```
 
-## Handling Image and Video Uploads
+## Handling Image and Video Uploads & CRUD Operations (Create, Read, Delete)
+
+### Handling Image and Video Uploads
 
 comment old stuff, for a rewamp
 ```py
@@ -719,7 +722,7 @@ async def upload_file(  # declares an async endpoint/helper
 ```
 *Note: `Depends(get_async_session)` is an example of Dependency Injection. It runs the provided function and passes the return value dynamically as a variable into the endpoint.*
 
-## CRUD Operations (Create, Read, Delete)
+### CRUD Operations (Create, Read, Delete)
 
 ### Retrieving Data (Read)
 Use SQLAlchemy's `select` to query the database. To extract results dynamically, loop over the rows or use `.scalars().all()`.
@@ -929,6 +932,35 @@ after reopning the application, db restored, and get api worked !!!
 ---
 
 next part
+
+You can use External Storage
+![alt text](image-18.png)
+![alt text](image-19.png)
+
+But Rn, using Imagekit's DAM 
+
+- Use this doc: https://imagekit.io/docs/integration/python
+
+![alt text](image-20.png)
+![alt text](image-21.png)
+![alt text](image-22.png) schema not error
+
+Now Post Stored in DB and Image linked stored in DAM
+![alt text](image-23.png)
+![alt text](image-24.png)
+![alt text](image-25.png)
+
+```bash
+pip install imagekitio
+```
+
+```py
+
+```
+
+```py
+
+```
 
 ## User Authentication (FastAPI Users)
 
