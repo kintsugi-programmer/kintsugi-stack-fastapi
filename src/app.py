@@ -1,7 +1,7 @@
 # app.py
 from fastapi import FastAPI, HTTPException, File, UploadFile, Depends, Form
-from src.schemas import PostCreate, PostResponse
-from src.db import Post, create_db_and_tables, get_async_session
+from src.schemas import PostCreate, PostResponse, UserRead, UserCreate, UserUpdate # new
+from src.db import Post, create_db_and_tables, get_async_session, User # new
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from contextlib import asynccontextmanager
@@ -11,6 +11,8 @@ import shutil
 import os
 import uuid
 import tempfile
+from src.users import fastapi_users, current_active_user, auth_backend # new
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,9 +21,37 @@ async def lifespan(app: FastAPI):
 
 application = FastAPI(lifespan=lifespan)
 
+application.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/auth/jwt",
+    tags=["auth"]
+) # in my app i want to include the authentication routes provided by fastapi_users, so that i can use JWT authentication in my app, and i want to prefix all the auth routes with /auth/jwt, so that i can easily identify them in my API documentation, and also group them together in the documentation under the "auth" tag.
+application.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/auth",
+    tags=["auth"]
+) # this will create the registration route for us, and we can use it to register new users, and we can also specify the UserRead and UserCreate schemas that we want to use for the registration route, so that we can validate the incoming data for the registration route, and also specify the response model for the registration route, so that we can validate the outgoing data for the registration route.
+application.include_router(
+    fastapi_users.get_reset_password_router(),
+    prefix="/auth",
+    tags=["auth"]
+) # this will create the reset password route for us, and we can use it to reset the password for existing users.
+application.include_router(
+    fastapi_users.get_verify_router(UserRead),
+    prefix="/auth",
+    tags=["auth"]
+) # this will create the verify route for us, and we can use it to verify for existing users.
+application.include_router(
+    fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+    tags=["users"]
+) # this will create the user management routes for us, such as /users/me, /users/{id}, etc. and we can use these routes to manage the users in our application, such as getting the current user, updating the user information, etc. and we can also specify the UserRead and UserUpdate schemas that we want to use for these routes, so that we can validate the incoming data for these routes, and also specify the response model for these routes, so that we can validate the outgoing data for these routes.
+
+
 @application.post("/upload") # using async, fastapi is async framework
 async def upload_file(
     file: UploadFile = File(...),
+    user: User = Depends(current_active_user), # this will ensure that only authenticated users can access this route, and it will also give us the current user object that we can use in our route, so that we can associate the uploaded file with the user who uploaded it, and we can also use the user information for any other purpose that we want in this route, such as logging, etc.
     caption: str = Form(""),
     session: AsyncSession = Depends(get_async_session) # FastAPI Dependency Injection, it will automatically create a new session for each request and close it after the request is done
 ) : 
@@ -47,6 +77,8 @@ async def upload_file(
         if upload_result and upload_result.url :
         # if upload_result.status_code == 200: # old
             post = Post( 
+                # endpoint protect
+                user_id = user.id, # storing user for every single post
                 # dummy post 
                 caption = caption,
                 # url = "dummy url",
@@ -86,20 +118,28 @@ async def upload_file(
 @application.get("/feed")
 async def get_feed(
     session: AsyncSession = Depends(get_async_session)
+    ,user: User = Depends(current_active_user) # protect endpoint
 ):
     result = await session.execute(select(Post).order_by(Post.created_at.desc())) # like select * from posts order by created_at desc, it will return a list of Post objects
     posts = [row[0] for row in result.all()] # result.all() will return a list of tuples, where each tuple contains a single Post object, so we need to extract the Post object from the tuple using row[0]
     # cursor object is returned by the database, and we need to convert it to a list of Post objects, so that we can return it as a response
 
+    result = await session.execute(select(User))
+    users = [ row[0] for row in result.all()]
+    users_dict = {u.id: u.email for u in users}
+
     posts_data = []
     for post in posts:
         posts_data.append({
             "id":str(post.id),
+            "user_id":str(post.user_id),
             "caption":post.caption,
             "url":post.url,
             "file_type":post.file_type,
             "file_name":post.file_name,
-            "created_at":post.created_at.isoformat()
+            "created_at":post.created_at.isoformat(),
+            "is_owner": post.user_id == user.id # this will add a field to the response that indicates whether the current user is the owner of the post or not, so that the client can use this information to determine whether to show edit/delete options for the post or not, because only the owner of the post should be able to edit or delete the post, so we need to provide this information in the response, so that the client can make the appropriate UI decisions based on this information.
+            ,"email": users_dict.get(post.user_id, "Unknown") 
         })
     
     return {"posts": posts_data}
@@ -107,7 +147,8 @@ async def get_feed(
 @application.delete("/post/{post_id}")
 async def delete_post(
     post_id: str,
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user) # protect endpoint
     ):
     try: 
         post_uuid = uuid.UUID(post_id) # convert the post_id string to a UUID object, if the post_id is not a valid UUID, it will raise a ValueError, so we need to handle that exception and return a 400 Bad Request error to the client, because the client has sent an invalid post_id, so we need to inform them about the error in their request
@@ -117,6 +158,10 @@ async def delete_post(
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
 
+        # endpoint protect
+        if post.user_id != user.id: # check if the user who is trying to delete the post is the owner of the post, if not, then we need to return a 403 Forbidden error, because the user is not authorized to delete this post
+            raise HTTPException(status_code=403, detail="You are not authorized to delete this post")
+        
         await session.delete(post) # like delete from posts where id = post_id, it will delete the post from the database, but we need to commit the transaction to make sure that the changes are saved to the database, so we need to call session.commit() after deleting the post
         await session.commit()
         return {"success":True, "message":"Post deleted successfully"}

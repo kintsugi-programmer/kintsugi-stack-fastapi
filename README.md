@@ -47,6 +47,7 @@
     - [JWT Strategy and User Manager](#jwt-strategy-and-user-manager)
     - [Injecting Auth Routes](#injecting-auth-routes)
     - [Protecting Endpoints](#protecting-endpoints)
+    - [Code(s)](#codes-1)
   - [ImageKit API URL Transformations](#imagekit-api-url-transformations)
   - [Front-End Integration (Streamlit context)](#front-end-integration-streamlit-context)
 
@@ -1268,6 +1269,396 @@ async def upload_file(  # declares an async endpoint/helper
 ```
 
 Additionally, apply authorization logic within the function (e.g., verifying `post.user_id == user.id` before allowing deletions) to enforce user-specific permissions.
+
+### Code(s)
+
+New Routes came out because of FastAPI Users
+![alt text](image-30.png)
+
+Register New USer
+![alt text](image-31.png)
+![alt text](image-32.png)
+ed791fc4-88c8-439b-9add-7ec66d18678e
+kintsugiprogrammer@gmail.com
+#ALS12345
+
+![alt text](image-33.png) Login
+![alt text](image-34.png) Logged in and got token, get used in any request
+![alt text](image-35.png) See Current User, and super long token associated in my request 
+
+For protecting routes, i can add dependency that for forces router to get the current active user
+
+after it
+
+![alt text](image-36.png) We can see other users posts, no ownership
+
+![alt text](image-37.png) Even if other user try to delete others, it will not be authorised
+
+```py
+# users.py
+import uuid
+from typing import Optional
+from fastapi import Depends, Request
+from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin, models 
+from fastapi_users.authentication import(
+    AuthenticationBackend,
+    BearerTransport,
+    JWTStrategy
+)
+from fastapi_users.db import SQLAlchemyUserDatabase
+from src.db import User, get_user_db
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+load_dotenv()
+
+SECRET = os.getenv("JWT_SECRET")
+
+
+# JWT_SECRET = "....."
+# openssl rand -hex 32
+
+# or you can use python to generate a random secret key
+# python -c "import secrets; print(secrets.token_hex(32))"
+
+class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
+    reset_password_token_secret = SECRET
+    verification_token_secret = SECRET
+
+    async def on_after_register(self, user: User, request: Optional[Request] = None):
+        print(f"User {user.id} has registered.")
+
+    async def on_after_request_verify(self, user: User, token: str, request: Optional[Request] = None):
+        print(f"Verification requested for user {user.id}. Verification token: {token}")
+
+async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
+    yield UserManager(user_db)
+
+bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
+
+def get_jwt_strategy() :
+    return JWTStrategy(secret=SECRET, lifetime_seconds=3600) # 1hr expiration time for the token ,theres is default value for lifetime_seconds in JWTStrategy, but we can override it here, more time means less security, less time means more security but also less convenience for the user, so you need to find a balance between security and convenience.
+
+auth_backend = AuthenticationBackend(
+    name="jwt",
+    transport=bearer_transport,
+    get_strategy=get_jwt_strategy
+)
+
+fastapi_users = FastAPIUsers[User, uuid.UUID](
+    get_user_manager=get_user_manager,
+    auth_backends=[auth_backend]
+) #
+
+current_active_user = fastapi_users.current_user(active=True) 
+
+# after this setup, All JWT related routes are automatically created for us, such as /auth/jwt/login, /auth/jwt/logout, /auth/jwt/refresh, /auth/jwt/verify, etc. We can also create our own custom routes if we want to, but these are the basic routes that are needed for JWT authentication.
+```
+```py
+# schemas.py
+from pydantic import BaseModel # BaseModel is special Func. in Python with Special Features
+from fastapi_users import schemas
+import uuid
+
+class PostCreate(BaseModel):
+    title: str
+    content: str
+
+class PostResponse(BaseModel):
+    title: str
+    content: str
+
+
+# just for inheritance, we can use the BaseUser, BaseUserCreate, BaseUserUpdate from fastapi_users, and then we can create our own UserRead, UserCreate, UserUpdate schemas that inherit from these base schemas, so that we can use them in our API routes and also in our database models, and we can also add any additional fields that we want to these schemas if needed.
+class UserRead(schemas.BaseUser[uuid.UUID]):
+    pass
+
+class UserCreate(schemas.BaseUserCreate):
+    pass
+
+class UserUpdate(schemas.BaseUserUpdate):
+    pass
+
+```
+```py
+# db.py
+from collections.abc import AsyncGenerator
+from datetime import datetime
+import uuid 
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.orm import DeclarativeBase, relationship
+from fastapi_users.db import SQLAlchemyUserDatabase, SQLAlchemyBaseUserTableUUID
+from fastapi import Depends
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+# DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+
+class Base(DeclarativeBase): # we can't directly use declarative_base() because we need to use it in async way, so we create a class that inherits from DeclarativeBase and then we can use it to create our models
+    pass
+
+# we are using SQLAlchemyBaseUserTableUUID because we want to use UUID as our primary key, and it already has the necessary fields for user management, such as email, hashed_password, is_active, is_superuser, etc.
+
+class User(SQLAlchemyBaseUserTableUUID, Base) :
+    posts  = relationship("Post", back_populates="user")
+
+
+class Post(Base):
+    __tablename__ = "posts"
+    id = Column(UUID(as_uuid=True),primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True),ForeignKey("user.id"),nullable=False) # NEW # FK 
+    caption = Column(Text)
+    url = Column(String, nullable=False)
+    file_type = Column(String, nullable= False)
+    file_name = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    user = relationship("User",back_populates="posts") # NEW # this is the relationship that allows us to access the user from the post, and also access the posts from the user, it's a bidirectional relationship, we use back_populates to specify the name of the relationship in the other model, so that SQLAlchemy can automatically handle the relationship for us.
+
+# One to many relationship, One User can have many posts
+# if wanna flip, then make FK at User table & back_populates
+
+engine = create_async_engine(DATABASE_URL)
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+
+async def create_db_and_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
+
+async def get_user_db(session: AsyncSession = Depends(get_async_session)): 
+    yield SQLAlchemyUserDatabase(session, User) 
+    # this is a FastAPI dependency that will allow us to get the user database for each request, it will create a new session for each request and close it after the request is done, so that we don't have any connection leaks, and we can ensure that our application is properly cleaned up when it shuts down.
+
+```
+```py
+# app.py
+from fastapi import FastAPI, HTTPException, File, UploadFile, Depends, Form
+from src.schemas import PostCreate, PostResponse, UserRead, UserCreate, UserUpdate # new
+from src.db import Post, create_db_and_tables, get_async_session, User # new
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from contextlib import asynccontextmanager
+from src.images import imagekit
+# from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
+import shutil
+import os
+import uuid
+import tempfile
+from src.users import fastapi_users, current_active_user, auth_backend # new
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_db_and_tables() # create db for us, and make sure  this is essentially handled correctly and cleanly . at time of exit, it will close the connection to the database, so that we don't have any connection leaks, and we can ensure that our application is properly cleaned up when it shuts down.
+    yield
+
+application = FastAPI(lifespan=lifespan)
+
+application.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/auth/jwt",
+    tags=["auth"]
+) # in my app i want to include the authentication routes provided by fastapi_users, so that i can use JWT authentication in my app, and i want to prefix all the auth routes with /auth/jwt, so that i can easily identify them in my API documentation, and also group them together in the documentation under the "auth" tag.
+application.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/auth",
+    tags=["auth"]
+) # this will create the registration route for us, and we can use it to register new users, and we can also specify the UserRead and UserCreate schemas that we want to use for the registration route, so that we can validate the incoming data for the registration route, and also specify the response model for the registration route, so that we can validate the outgoing data for the registration route.
+application.include_router(
+    fastapi_users.get_reset_password_router(),
+    prefix="/auth",
+    tags=["auth"]
+) # this will create the reset password route for us, and we can use it to reset the password for existing users.
+application.include_router(
+    fastapi_users.get_verify_router(UserRead),
+    prefix="/auth",
+    tags=["auth"]
+) # this will create the verify route for us, and we can use it to verify for existing users.
+application.include_router(
+    fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+    tags=["users"]
+) # this will create the user management routes for us, such as /users/me, /users/{id}, etc. and we can use these routes to manage the users in our application, such as getting the current user, updating the user information, etc. and we can also specify the UserRead and UserUpdate schemas that we want to use for these routes, so that we can validate the incoming data for these routes, and also specify the response model for these routes, so that we can validate the outgoing data for these routes.
+
+
+@application.post("/upload") # using async, fastapi is async framework
+async def upload_file(
+    file: UploadFile = File(...),
+    user: User = Depends(current_active_user), # this will ensure that only authenticated users can access this route, and it will also give us the current user object that we can use in our route, so that we can associate the uploaded file with the user who uploaded it, and we can also use the user information for any other purpose that we want in this route, such as logging, etc.
+    caption: str = Form(""),
+    session: AsyncSession = Depends(get_async_session) # FastAPI Dependency Injection, it will automatically create a new session for each request and close it after the request is done
+) : 
+
+    temp_file_path = None
+    try: 
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as temp_file:
+            temp_file_path = temp_file.name
+            shutil.copyfileobj(file.file, temp_file)
+        
+        upload_result = imagekit.files.upload(
+        # upload_result = imagekit.upload_file( # old
+
+            file=open(temp_file_path, "rb"),
+            file_name=file.filename,
+            folder="/products",
+            tags=["product", "featured"]
+            # options=UploadFileRequestOptions( # old
+            #     use_unique_file_name=True,
+            #     tags=["backend-upload"]
+            # )
+        )
+        if upload_result and upload_result.url :
+        # if upload_result.status_code == 200: # old
+            post = Post( 
+                # endpoint protect
+                user_id = user.id, # storing user for every single post
+                # dummy post 
+                caption = caption,
+                # url = "dummy url",
+                url = upload_result.url,
+                # file_type = "photo",
+                file_type = "video" if file.content_type.startswith("video/") else "photo",
+                # file_name = "dummy name"
+                file_name = upload_result.name
+            )
+            session.add(post)
+            await session.commit()
+            await session.refresh(post)
+            return post
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        # pass
+    finally:
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.unlink(temp_file_path)
+        file.file.close()
+
+
+    # dummy
+    # post = Post( # dummy post 
+    #     caption = caption,
+    #     url = "dummy url",
+    #     file_type = "photo",
+    #     file_name = "dummy name"
+    # )
+    # session.add(post) # like staging, post is added to session but not saved
+    # await session.commit() # like commit, saving the post to the database
+    # # id and created_at are generated by the database, so we need to refresh the post object to get the updated data from the database, because after commit, the post object is not updated with the data from the database, so we need to refresh it to get the id of the post
+    # # after commit, the post object is not updated with the data from the database, so we need to refresh it to get the id of the post
+    # await session.refresh(post) # like refresh, refreshing the post object with the data from the database, so that we can get the id of the post
+    # return post
+
+@application.get("/feed")
+async def get_feed(
+    session: AsyncSession = Depends(get_async_session)
+    ,user: User = Depends(current_active_user) # protect endpoint
+):
+    result = await session.execute(select(Post).order_by(Post.created_at.desc())) # like select * from posts order by created_at desc, it will return a list of Post objects
+    posts = [row[0] for row in result.all()] # result.all() will return a list of tuples, where each tuple contains a single Post object, so we need to extract the Post object from the tuple using row[0]
+    # cursor object is returned by the database, and we need to convert it to a list of Post objects, so that we can return it as a response
+
+    result = await session.execute(select(User))
+    users = [ row[0] for row in result.all()]
+    users_dict = {u.id: u.email for u in users}
+
+    posts_data = []
+    for post in posts:
+        posts_data.append({
+            "id":str(post.id),
+            "user_id":str(post.user_id),
+            "caption":post.caption,
+            "url":post.url,
+            "file_type":post.file_type,
+            "file_name":post.file_name,
+            "created_at":post.created_at.isoformat(),
+            "is_owner": post.user_id == user.id # this will add a field to the response that indicates whether the current user is the owner of the post or not, so that the client can use this information to determine whether to show edit/delete options for the post or not, because only the owner of the post should be able to edit or delete the post, so we need to provide this information in the response, so that the client can make the appropriate UI decisions based on this information.
+            ,"email": users_dict.get(post.user_id, "Unknown") 
+        })
+    
+    return {"posts": posts_data}
+
+@application.delete("/post/{post_id}")
+async def delete_post(
+    post_id: str,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user) # protect endpoint
+    ):
+    try: 
+        post_uuid = uuid.UUID(post_id) # convert the post_id string to a UUID object, if the post_id is not a valid UUID, it will raise a ValueError, so we need to handle that exception and return a 400 Bad Request error to the client, because the client has sent an invalid post_id, so we need to inform them about the error in their request
+        result = await session.execute(select(Post).where(Post.id == post_uuid))  # like select * from posts where id = post_id, it will return a list of Post objects that match the condition, but since id is unique, it will return either one Post object or None
+        post = result.scalars().first() # scalars() will return a list of Post objects, and first() will return the first Post object from the list, or None if the list is empty
+
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+
+        # endpoint protect
+        if post.user_id != user.id: # check if the user who is trying to delete the post is the owner of the post, if not, then we need to return a 403 Forbidden error, because the user is not authorized to delete this post
+            raise HTTPException(status_code=403, detail="You are not authorized to delete this post")
+        
+        await session.delete(post) # like delete from posts where id = post_id, it will delete the post from the database, but we need to commit the transaction to make sure that the changes are saved to the database, so we need to call session.commit() after deleting the post
+        await session.commit()
+        return {"success":True, "message":"Post deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# old stuff rewamp
+
+# @application.get("/hello-world")
+# def hello_world():
+#     return {"message":"hello world !!!"}
+
+# # text_posts = {
+# #     1 : {"title":"new post", "content": "cool test post"}
+# # }
+
+# text_posts = {
+#     1: {"title": "Morning Coffee", "content": "Started the day with a strong cup of coffee."},
+#     2: {"title": "Learning FastAPI", "content": "Building my first API with FastAPI today."},
+#     3: {"title": "Debugging Code", "content": "Spent an hour fixing a small bug."},
+#     4: {"title": "New Project Idea", "content": "Thinking about building a health tech platform."},
+#     5: {"title": "Database Setup", "content": "Installed PostgreSQL and created a new database."},
+#     6: {"title": "API Testing", "content": "Testing endpoints using Postman."},
+#     7: {"title": "Late Night Coding", "content": "Still coding at midnight."},
+#     8: {"title": "Learning Git", "content": "Practicing commits and branches today."},
+#     9: {"title": "Reading Docs", "content": "Reading FastAPI documentation."},
+#     10: {"title": "Weekend Build", "content": "Working on a small backend project."}
+# }
+
+# # @application.get("/posts")
+# # def get_all_posts():
+# #     return text_posts
+
+# @application.get("/post/{id}") 
+# def get_post(id:int)-> PostResponse:
+#     if id not in text_posts:
+#         raise HTTPException(status_code=404, detail="post not found")
+#     return text_posts.get(id)
+
+# @application.get("/posts")
+# def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it
+#     if limit:
+#             return list(text_posts.values())[:limit]
+#     return text_posts
+
+# @application.post("/post")
+# def create_post(post_body: PostCreate) -> PostResponse : # validates incoming (PostCreate) and Outgoing (PostResponse), if not valid so raise error
+#     new_id = max(text_posts.keys()) + 1
+#     new_post = { "title": post_body.title , "content" : post_body.content }
+#     text_posts[new_id] = new_post
+#     return new_post
+```
 
 ## ImageKit API URL Transformations
 ImageKit allows real-time dynamic manipulation of files directly through query strings or URL paths, enhancing UI flexibility without reprocessing base files.
