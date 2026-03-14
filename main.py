@@ -1,4 +1,5 @@
 # main.py
+# uv run main.py
 import uvicorn
 
 def main():

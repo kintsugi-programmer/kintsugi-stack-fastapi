@@ -2,7 +2,7 @@
 
 > FastAPI Comprehensive Guide: Photo & Video Sharing API
 
-![alt text](unnamed.png)
+![alt text](ss/unnamed.webp)
 
 - Source: https://www.youtube.com/watch?v=SR5NYCdzKkc
 
@@ -50,10 +50,18 @@
     - [Code(s)](#codes-1)
   - [ImageKit API URL Transformations](#imagekit-api-url-transformations)
   - [Front-End Integration (Streamlit context)](#front-end-integration-streamlit-context)
+    - [Code(s)](#codes-2)
 
 
 ## Project Overview
 This project involves building a production-grade, back-end API for a photo and video sharing application, similar to the early days of Instagram. The application allows users to sign in, view a feed of photos and videos (with dates and posting users), and upload media. The backend handles advanced concepts including authentication, authorization, logging in users, connecting to a database, and handling file uploads.
+
+```bash
+uv run main.py # backend
+```
+```bash
+uv run streamlit run frontend.py # frontend
+```
 
 ## Core Concepts of Web Apps and APIs
 
@@ -66,7 +74,7 @@ A **URL** (Uniform Resource Locator) consists of several core components:
 *   **Path (or Endpoint)**: The specific route, page, or resource being accessed from the domain (e.g., `/courses/python` or `/api/post`). APIs use custom endpoints to control access to particular resources.
 *   **Query Parameter**: Extra information used to filter a page or retrieve specific data. It always comes after a question mark `?` and multiple parameters are separated by ampersands `&` (e.g., `?video=123&page=2`).
 
-![alt text](image.png)
+![alt text](ss/image.webp)
 
 ### The Request and Response Structure
 The communication flow between a front-end (client) and back-end (API) is handled via **Requests** and **Responses**.
@@ -92,13 +100,13 @@ The communication flow between a front-end (client) and back-end (API) is handle
 *   **Body**: Additional data returned to the front-end (e.g., the requested post data). Format is often defined by the headers.
 *   **Headers**: Security information, authentication details, or data types (e.g., `application/json`).
 
-![alt text](image-1.png)
+![alt text](ss/image-1.webp)
 
-![alt text](image-2.png) Simple APIs Example
+![alt text](ss/image-2.webp) Simple APIs Example
 
-![alt text](image-3.png)
+![alt text](ss/image-3.webp)
 
-![alt text](image-4.png)
+![alt text](ss/image-4.webp)
 
 ### JWT Authentication Primer
 **JWT (JSON Web Tokens)** are used for authenticated APIs to identify users and verify authorizations securely. 
@@ -107,7 +115,7 @@ The communication flow between a front-end (client) and back-end (API) is handle
 3.  The client stores this token and sends it along in the headers of all future requests.
 4.  The API verifies the token on every request to ensure the user has permission to perform the action.
 
-![alt text](image-5.png)
+![alt text](ss/image-5.webp)
 
 ## Environment and Setup
 
@@ -190,7 +198,7 @@ Run the server via the terminal:
 uv run main.py  # runs the app inside project env
 ```
 
-![alt text](image-6.png)
+![alt text](ss/image-6.webp)
 
 ```
 http://localhost:8000/  # shows local endpoint URL to open
@@ -203,8 +211,8 @@ FastAPI automatically generates comprehensive documentation allowing you to exec
 *   **Swagger UI**: Navigate to `/docs` to see endpoints, configuration, and a "Try it out" button for sending test requests.
 *   **ReDoc**: Navigate to `/redoc` for an alternative, modern documentation view.
 
-![alt text](image-7.png)
-![alt text](image-8.png)
+![alt text](ss/image-7.webp)
+![alt text](ss/image-8.webp)
 
 
 
@@ -237,8 +245,8 @@ if __name__ == "__main__":  # checks a condition before next step
     main()  # shows this line as part of the example output
 ```
 
-![alt text](image-9.png)
-![alt text](image-10.png)
+![alt text](ss/image-9.webp)
+![alt text](ss/image-10.webp)
 
 ## Routing and Parameters
 
@@ -297,7 +305,7 @@ def get_post(id:int):  # declares a helper or endpoint function
 
 ```
 
-![alt text](image-11.png)
+![alt text](ss/image-11.webp)
 
 ### Query Parameters
 Query parameters are optional or mandatory variables passed directly into the endpoint function. Assigning a default value (like `None`) makes them optional.
@@ -310,7 +318,7 @@ def get_all_posts(limit: int = None): # here parameter is written because FastAP
     return text_posts  # returns data to the API caller
 ```
 
-![alt text](image-12.png)
+![alt text](ss/image-12.webp)
 
 > FastAPI automatically validates all data going into and coming out of the function
 
@@ -410,8 +418,8 @@ def create_post(post_body: PostCreate) -> PostResponse : # validates incoming (P
     return new_post  # returns data to the API caller
 ```
 
-![alt text](image-13.png) try create post
-![alt text](image-14.png) access that post
+![alt text](ss/image-13.webp) try create post
+![alt text](ss/image-14.webp) access that post
 
 ## Database Setup (SQLAlchemy)
 
@@ -925,34 +933,34 @@ async def get_feed(
 ```
 
 uploading sample document
-![alt text](image-15.png)
-![alt text](image-16.png)
+![alt text](ss/image-15.webp)
+![alt text](ss/image-16.webp)
 
 even if we exit application, db get saved, once we restart application, db gets restored !!!
 
 after reopning the application, db restored, and get api worked !!!
-![alt text](image-17.png)
+![alt text](ss/image-17.webp)
 
 ---
 
 next part
 
 You can use External Storage
-![alt text](image-18.png)
-![alt text](image-19.png)
+![alt text](ss/image-18.webp)
+![alt text](ss/image-19.webp)
 
 But Rn, using Imagekit's DAM 
 
 - Use this doc: https://imagekit.io/docs/integration/python
 
-![alt text](image-20.png)
-![alt text](image-21.png)
-![alt text](image-22.png) schema not error
+![alt text](ss/image-20.webp)
+![alt text](ss/image-21.webp)
+![alt text](ss/image-22.webp) schema not error
 
 Now Post Stored in DB and Image linked stored in DAM
-![alt text](image-23.png)
-![alt text](image-24.png)
-![alt text](image-25.png)
+![alt text](ss/image-23.webp)
+![alt text](ss/image-24.webp)
+![alt text](ss/image-25.webp)
 
 ```bash
 pip install imagekitio
@@ -1163,10 +1171,10 @@ async def delete_post(
         raise HTTPException(status_code=500, detail=str(e))
 ```
 
-![alt text](image-27.png)
-![alt text](image-28.png) Deleted Success
+![alt text](ss/image-27.webp)
+![alt text](ss/image-28.webp) Deleted Success
 
-![alt text](image-29.png) Not won't shown in GET
+![alt text](ss/image-29.webp) Not won't shown in GET
 
 ## User Authentication (FastAPI Users)
 
@@ -1273,26 +1281,26 @@ Additionally, apply authorization logic within the function (e.g., verifying `po
 ### Code(s)
 
 New Routes came out because of FastAPI Users
-![alt text](image-30.png)
+![alt text](ss/image-30.webp)
 
 Register New USer
-![alt text](image-31.png)
-![alt text](image-32.png)
+![alt text](ss/image-31.webp)
+![alt text](ss/image-32.webp)
 ed791fc4-88c8-439b-9add-7ec66d18678e
 kintsugiprogrammer@gmail.com
 #ALS12345
 
-![alt text](image-33.png) Login
-![alt text](image-34.png) Logged in and got token, get used in any request
-![alt text](image-35.png) See Current User, and super long token associated in my request 
+![alt text](ss/image-33.webp) Login
+![alt text](ss/image-34.webp) Logged in and got token, get used in any request
+![alt text](ss/image-35.webp) See Current User, and super long token associated in my request 
 
 For protecting routes, i can add dependency that for forces router to get the current active user
 
 after it
 
-![alt text](image-36.png) We can see other users posts, no ownership
+![alt text](ss/image-36.webp) We can see other users posts, no ownership
 
-![alt text](image-37.png) Even if other user try to delete others, it will not be authorised
+![alt text](ss/image-37.webp) Even if other user try to delete others, it will not be authorised
 
 ```py
 # users.py
@@ -1667,7 +1675,7 @@ ImageKit allows real-time dynamic manipulation of files directly through query s
 *   **Text/Overlays**: Add captions via URL string overlays, modifying sizes using attributes like `font-size_100`.
 *   **Videos**: Output frames as thumbnails via appending `ik-thumbnail.jpg` (or requesting specific timeframes like 5 seconds in). Videos can also be cropped into vertical frames with blurred backgrounds, and drastically optimized (e.g., 90% quality compression makes files 3x smaller without major quality loss).
 
-![alt text](image-26.png)
+![alt text](ss/image-26.webp)
 
 https://ik.imagekit.io/mwg1upyo1/products/image-6_mJSJ4dfaR.png to
 
@@ -1677,3 +1685,199 @@ https://ik.imagekit.io/mwg1upyo1/products/image-6_mJSJ4dfaR.png to
 
 ## Front-End Integration (Streamlit context)
 A simple frontend like Streamlit interfaces with the backend by executing HTTP operations mapped to the API. Once the backend successfully registers or logs in the user (`/auth/jwt/login`), the frontend saves the resulting access token into a session state. For any protected operations (like viewing the feed or uploading files), this token is included in the request headers (formatted as `Bearer <token>`).
+
+### Code(s)
+
+```py
+# frontend.py
+# uv run streamlit run frontend.py
+import streamlit as st
+import requests
+import base64
+import urllib.parse
+
+st.set_page_config(page_title="Simple Social", layout="wide")
+
+# Initialize session state
+if 'token' not in st.session_state:
+    st.session_state.token = None
+if 'user' not in st.session_state:
+    st.session_state.user = None
+
+
+def get_headers():
+    """Get authorization headers with token"""
+    if st.session_state.token:
+        return {"Authorization": f"Bearer {st.session_state.token}"}
+    return {}
+
+
+def login_page():
+    st.title("🚀 Welcome to Simple Social")
+
+    # Simple form with two buttons
+    email = st.text_input("Email:")
+    password = st.text_input("Password:", type="password")
+
+    if email and password:
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("Login", type="primary", use_container_width=True):
+                # Login using FastAPI Users JWT endpoint
+                login_data = {"username": email, "password": password}
+                response = requests.post("http://localhost:8000/auth/jwt/login", data=login_data)
+
+                if response.status_code == 200:
+                    token_data = response.json()
+                    st.session_state.token = token_data["access_token"]
+
+                    # Get user info
+                    user_response = requests.get("http://localhost:8000/users/me", headers=get_headers())
+                    if user_response.status_code == 200:
+                        st.session_state.user = user_response.json()
+                        st.rerun()
+                    else:
+                        st.error("Failed to get user info")
+                else:
+                    st.error("Invalid email or password!")
+
+        with col2:
+            if st.button("Sign Up", type="secondary", use_container_width=True):
+                # Register using FastAPI Users
+                signup_data = {"email": email, "password": password}
+                response = requests.post("http://localhost:8000/auth/register", json=signup_data)
+
+                if response.status_code == 201:
+                    st.success("Account created! Click Login now.")
+                else:
+                    error_detail = response.json().get("detail", "Registration failed")
+                    st.error(f"Registration failed: {error_detail}")
+    else:
+        st.info("Enter your email and password above")
+
+
+def upload_page():
+    st.title("📸 Share Something")
+
+    uploaded_file = st.file_uploader("Choose media", type=['png', 'jpg', 'jpeg', 'mp4', 'avi', 'mov', 'mkv', 'webm'])
+    caption = st.text_area("Caption:", placeholder="What's on your mind?")
+
+    if uploaded_file and st.button("Share", type="primary"):
+        with st.spinner("Uploading..."):
+            files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
+            data = {"caption": caption}
+            response = requests.post("http://localhost:8000/upload", files=files, data=data, headers=get_headers())
+
+            if response.status_code == 200:
+                st.success("Posted!")
+                st.rerun()
+            else:
+                st.error("Upload failed!")
+
+
+def encode_text_for_overlay(text):
+    """Encode text for ImageKit overlay - base64 then URL encode"""
+    if not text:
+        return ""
+    # Base64 encode the text
+    base64_text = base64.b64encode(text.encode('utf-8')).decode('utf-8')
+    # URL encode the result
+    return urllib.parse.quote(base64_text)
+
+
+def create_transformed_url(original_url, transformation_params, caption=None):
+    if caption:
+        encoded_caption = encode_text_for_overlay(caption)
+        # Add text overlay at bottom with semi-transparent background
+        text_overlay = f"l-text,ie-{encoded_caption},ly-N20,lx-20,fs-100,co-white,bg-000000A0,l-end"
+        transformation_params = text_overlay
+
+    if not transformation_params:
+        return original_url
+
+    parts = original_url.split("/")
+
+    imagekit_id = parts[3]
+    file_path = "/".join(parts[4:])
+    base_url = "/".join(parts[:4])
+    return f"{base_url}/tr:{transformation_params}/{file_path}"
+
+
+def feed_page():
+    st.title("🏠 Feed")
+
+    response = requests.get("http://localhost:8000/feed", headers=get_headers())
+    if response.status_code == 200:
+        posts = response.json()["posts"]
+
+        if not posts:
+            st.info("No posts yet! Be the first to share something.")
+            return
+
+        for post in posts:
+            st.markdown("---")
+
+            # Header with user, date, and delete button (if owner)
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.markdown(f"**{post['email']}** • {post['created_at'][:10]}")
+            with col2:
+                if post.get('is_owner', False):
+                    if st.button("🗑️", key=f"delete_{post['id']}", help="Delete post"):
+                        # Delete the post
+                        response = requests.delete(f"http://localhost:8000/post/{post['id']}", headers=get_headers())
+                        if response.status_code == 200:
+                            st.success("Post deleted!")
+                            st.rerun()
+                        elif response.status_code == 403:
+                            st.error("You are not authorized to delete this post.")
+                        elif response.status_code == 404:
+                            st.error("Post not found.")
+                        else:
+                            st.error(f"Failed to delete post: {response.status_code} {response.text}")
+
+            # Uniform media display with caption overlay
+            caption = post.get('caption', '')
+            # if post['file_type'] == 'image':
+            uniform_url = create_transformed_url(post['url'], "", caption)
+            st.image(uniform_url, width=300)
+            # else:
+            #     # For videos: specify only height to maintain aspect ratio + caption overlay
+            #     uniform_video_url = create_transformed_url(post['url'], "w-400,h-200,cm-pad_resize,bg-blurred")
+            #     st.video(uniform_video_url, width=300)
+            #     st.caption(caption)
+
+            st.markdown("")  # Space between posts
+    else:
+        st.error("Failed to load feed")
+
+
+# Main app logic
+if st.session_state.user is None:
+    login_page()
+else:
+    # Sidebar navigation
+    st.sidebar.title(f"👋 Hi {st.session_state.user['email']}!")
+
+    if st.sidebar.button("Logout"):
+        st.session_state.user = None
+        st.session_state.token = None
+        st.rerun()
+
+    st.sidebar.markdown("---")
+    page = st.sidebar.radio("Navigate:", ["🏠 Feed", "📸 Upload"])
+
+    if page == "🏠 Feed":
+        feed_page()
+    else:
+        upload_page()
+```
+
+![alt text](ss/image-38.webp)
+
+![alt text](ss/image-39.webp)
+
+![alt text](ss/image-40.webp)
+
+![alt text](ss/image-41.webp)
