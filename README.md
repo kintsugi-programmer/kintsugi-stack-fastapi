@@ -1,3 +1,3 @@
 # kintsugi-stack-fastapi
 
-- [phase_1](phase_1/README.md)
+- [res_1](res_1/README.md)
