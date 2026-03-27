@@ -1,4 +1,4 @@
-# kintsugi-stack-fastapi
+# Full-Stack Media Sharing App: FastAPI, FastAPI Users, JWT, SQLAlchemy, ImageKit & Streamlit
 
 > FastAPI Comprehensive Guide: Photo & Video Sharing API
 
@@ -7,7 +7,7 @@
 - Source: https://www.youtube.com/watch?v=SR5NYCdzKkc
 
 ## Table of contents
-- [kintsugi-stack-fastapi](#kintsugi-stack-fastapi)
+- [Full-Stack Media Sharing App: FastAPI, FastAPI Users, JWT, SQLAlchemy, ImageKit \& Streamlit](#full-stack-media-sharing-app-fastapi-fastapi-users-jwt-sqlalchemy-imagekit--streamlit)
   - [Table of contents](#table-of-contents)
   - [Project Overview](#project-overview)
   - [Core Concepts of Web Apps and APIs](#core-concepts-of-web-apps-and-apis)

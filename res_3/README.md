@@ -1,4 +1,4 @@
-# FastAPI + SQL Integration
+# FastAPI SQL Integration: CRUD API with SQLAlchemy, SQLite & Pydantic
 
 - res: https://www.youtube.com/watch?v=xq1Snezb1rs
 

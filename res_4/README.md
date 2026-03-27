@@ -1,4 +1,4 @@
-# Authenticated REST API with FastAPI, OAuth2, and JSON Web Tokens
+# FastAPI Auth API: OAuth2, JWT, SQLAlchemy & Passlib
 
 - res: https://www.youtube.com/watch?v=KxR3OONvDvo
 
