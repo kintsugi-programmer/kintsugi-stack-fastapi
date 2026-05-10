@@ -5,7 +5,7 @@
 ![alt text](ss/unnamed.webp)
 
 ## Table of contents
-- [Full-Stack Media Sharing App: FastAPI, FastAPI Users, JWT, SQLAlchemy, ImageKit \& Streamlit](#full-stack-media-sharing-app-fastapi-fastapi-users-jwt-sqlalchemy-imagekit--streamlit)
+- [skills-fastapi](#skills-fastapi)
   - [Table of contents](#table-of-contents)
   - [Project Overview](#project-overview)
   - [Core Concepts of Web Apps and APIs](#core-concepts-of-web-apps-and-apis)
