@@ -1,11 +1,11 @@
-# skills-fastapi
+# kintsugi-stack-fastapi
 
 > Full-Stack Media Sharing App: FastAPI, FastAPI Users, JWT, SQLAlchemy, ImageKit & Streamlit
 
 ![alt text](ss/unnamed.webp)
 
 ## Table of contents
-- [skills-fastapi](#skills-fastapi)
+- [kintsugi-stack-fastapi](#kintsugi-stack-fastapi)
   - [Table of contents](#table-of-contents)
   - [Project Overview](#project-overview)
   - [Core Concepts of Web Apps and APIs](#core-concepts-of-web-apps-and-apis)
