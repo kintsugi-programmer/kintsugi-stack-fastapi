@@ -1,57 +1,13 @@
-# kintsugi-stack-fastapi
+# FastAPI
+
+- [https://github.com/kintsugi-programmer/kintsugi-stack-fastapi](https://github.com/kintsugi-programmer/kintsugi-stack-fastapi)
 
 > Full-Stack Media Sharing App: FastAPI, FastAPI Users, JWT, SQLAlchemy, ImageKit & Streamlit
 
 ![alt text](ss/unnamed.webp)
 
-## Table of contents
-- [kintsugi-stack-fastapi](#kintsugi-stack-fastapi)
-  - [Table of contents](#table-of-contents)
-  - [Project Overview](#project-overview)
-  - [Core Concepts of Web Apps and APIs](#core-concepts-of-web-apps-and-apis)
-    - [What is an API?](#what-is-an-api)
-    - [URLs and Endpoints](#urls-and-endpoints)
-    - [The Request and Response Structure](#the-request-and-response-structure)
-    - [JWT Authentication Primer](#jwt-authentication-primer)
-  - [Environment and Setup](#environment-and-setup)
-    - [Project Initialization](#project-initialization)
-    - [Installing Dependencies](#installing-dependencies)
-    - [Environment Variables (.env)](#environment-variables-env)
-  - [Creating the FastAPI Application](#creating-the-fastapi-application)
-    - [Scaffolding](#scaffolding)
-    - [Creating Your First Endpoint](#creating-your-first-endpoint)
-    - [Running the Server with Uvicorn](#running-the-server-with-uvicorn)
-    - [Interactive Documentation](#interactive-documentation)
-  - [Routing and Parameters](#routing-and-parameters)
-    - [Path Parameters](#path-parameters)
-    - [Query Parameters](#query-parameters)
-  - [Pydantic Schemas and Data Validation](#pydantic-schemas-and-data-validation)
-    - [Request Bodies](#request-bodies)
-    - [Response Models](#response-models)
-  - [Database Setup (SQLAlchemy)](#database-setup-sqlalchemy)
-    - [Creating Data Models](#creating-data-models)
-    - [Async Engine and Session Initialization](#async-engine-and-session-initialization)
-    - [Lifespan Context Manager](#lifespan-context-manager)
-  - [Handling Image and Video Uploads \& CRUD Operations (Create, Read, Delete)](#handling-image-and-video-uploads--crud-operations-create-read-delete)
-    - [Handling Image and Video Uploads](#handling-image-and-video-uploads)
-    - [Integrating ImageKit](#integrating-imagekit)
-    - [File Upload Endpoint](#file-upload-endpoint)
-    - [CRUD Operations (Create, Read, Delete)](#crud-operations-create-read-delete)
-    - [Retrieving Data (Read)](#retrieving-data-read)
-    - [Deleting Data](#deleting-data)
-    - [Code(s)](#codes)
-  - [User Authentication (FastAPI Users)](#user-authentication-fastapi-users)
-    - [Database Relationships](#database-relationships)
-    - [JWT Strategy and User Manager](#jwt-strategy-and-user-manager)
-    - [Injecting Auth Routes](#injecting-auth-routes)
-    - [Protecting Endpoints](#protecting-endpoints)
-    - [Code(s)](#codes-1)
-  - [ImageKit API URL Transformations](#imagekit-api-url-transformations)
-  - [Front-End Integration (Streamlit context)](#front-end-integration-streamlit-context)
-    - [Code(s)](#codes-2)
-
-
 ## Project Overview
+
 This project involves building a production-grade, back-end API for a photo and video sharing application, similar to the early days of Instagram. The application allows users to sign in, view a feed of photos and videos (with dates and posting users), and upload media. The backend handles advanced concepts including authentication, authorization, logging in users, connecting to a database, and handling file uploads.
 
 ```bash
@@ -64,10 +20,13 @@ uv run streamlit run frontend.py # frontend
 ## Core Concepts of Web Apps and APIs
 
 ### What is an API?
+
 **API** stands for **Application Programming Interface**. It is essentially a back-end framework running on a secure server that facilitates the access and control of data (like user accounts, image, or video posts). The **front-end** (or **client**) is the visual interface users interact with (e.g., a website). The front-end communicates with the API to perform secure operations. 
 
 ### URLs and Endpoints
+
 A **URL** (Uniform Resource Locator) consists of several core components:
+
 *   **Domain**: The website space (e.g., `techwithtim.net`, ending in `.com`, `.net`, etc.).
 *   **Path (or Endpoint)**: The specific route, page, or resource being accessed from the domain (e.g., `/courses/python` or `/api/post`). APIs use custom endpoints to control access to particular resources.
 *   **Query Parameter**: Extra information used to filter a page or retrieve specific data. It always comes after a question mark `?` and multiple parameters are separated by ampersands `&` (e.g., `?video=123&page=2`).
@@ -75,9 +34,11 @@ A **URL** (Uniform Resource Locator) consists of several core components:
 ![alt text](ss/image.webp)
 
 ### The Request and Response Structure
+
 The communication flow between a front-end (client) and back-end (API) is handled via **Requests** and **Responses**.
 
 **Request Components (Client to API)**:
+
 *   **Type / Method**: Indicates what the front-end wants to do.
     *   **GET**: Retrieve data.
     *   **POST**: Create new data.
@@ -88,6 +49,7 @@ The communication flow between a front-end (client) and back-end (API) is handle
 *   **Headers**: Additional information, typically related to authentication (e.g., tokens indicating the user is signed in).
 
 **Response Components (API to Client)**:
+
 *   **Status Code**: A number indicating the outcome of the request.
     *   **200**: OK / Successful.
     *   **201**: Created successfully.
@@ -100,14 +62,18 @@ The communication flow between a front-end (client) and back-end (API) is handle
 
 ![alt text](ss/image-1.webp)
 
-![alt text](ss/image-2.webp) Simple APIs Example
+![alt text](ss/image-2.webp)
+
+Simple APIs Example
 
 ![alt text](ss/image-3.webp)
 
 ![alt text](ss/image-4.webp)
 
 ### JWT Authentication Primer
+
 **JWT (JSON Web Tokens)** are used for authenticated APIs to identify users and verify authorizations securely. 
+
 1.  A user logs in by sending their username and password to an authentication endpoint.
 2.  The API verifies the credentials and returns a signed **JWT token** (a random string identifying the specific user).
 3.  The client stores this token and sends it along in the headers of all future requests.
@@ -118,7 +84,9 @@ The communication flow between a front-end (client) and back-end (API) is handle
 ## Environment and Setup
 
 ### Project Initialization
+
 It is highly recommended to use **PyCharm** for heavy Python projects due to its support. 
+
 1.  Open a new folder in your editor.
 2.  Use a package manager like `uv` (a modern, highly efficient alternative to `pip`) to initialize the project and isolate dependencies.
 
@@ -134,6 +102,7 @@ uv init .  # initializes project metadata files
 This creates isolated dependencies in your folder, generating a `main.py` and a `pyproject.toml` file.
 
 ### Installing Dependencies
+
 Run the following commands to install necessary dependencies:
 ```bash
 uv add fastapi  # adds this dependency to the project
@@ -146,6 +115,7 @@ uv add streamlit  # adds this dependency to the project
 ```
 
 ### Environment Variables (.env)
+
 Sensitive credentials, tokens, and keys must be stored in a `.env` file. 
 
 Create an account on **ImageKit** (a free service for hosting, managing, and optimizing images/videos as a Digital Asset Management system). Retrieve the public key, private key (requires account password confirmation), and URL endpoint from the developer options.
@@ -160,6 +130,7 @@ IMAGEKIT_URL_ENDPOINT=your_url_endpoint  # stores ImageKit API endpoint
 ## Creating the FastAPI Application
 
 ### Scaffolding
+
 Create a directory named `app` (or `src/app`) to hold the application code, and inside it, create an `app.py` file. This file initializes the FastAPI instance.
 
 ```python
@@ -169,6 +140,7 @@ app = FastAPI()  # creates the FastAPI application instance
 ```
 
 ### Creating Your First Endpoint
+
 Endpoints are defined using decorators containing the HTTP method (e.g., `@app.get`) and the path. FastAPI functions typically return a Pydantic object or a Python dictionary (which represents **JSON** - JavaScript Object Notation).
 
 ```python
@@ -178,6 +150,7 @@ def hello_world():  # defines a simple test endpoint
 ```
 
 ### Running the Server with Uvicorn
+
 Modify the root `main.py` file to run the application using **Uvicorn**, an asynchronous web server.
 
 ```python
@@ -186,6 +159,7 @@ import uvicorn  # imports Uvicorn server runner
 if __name__ == "__main__":  # checks a condition before next step
     uvicorn.run("app.app:app", host="0.0.0.0", port=8000, reload=True)  # starts ASGI server with app target
 ```
+
 *   `"app.app:app"`: Targets the `app` variable inside the `app.py` file within the `app` directory.
 *   `host="0.0.0.0"`: Runs the server on any available domain (accessible via localhost `127.0.0.1` or the machine's private IP address on the network).
 *   `port=8000`: Specifies the port.
@@ -198,14 +172,16 @@ uv run main.py  # runs the app inside project env
 
 ![alt text](ss/image-6.webp)
 
-```
+```text
 http://localhost:8000/  # shows local endpoint URL to open
 
 {"detail":"Not Found"}  # shows sample API JSON response
 ```
 
 ### Interactive Documentation
+
 FastAPI automatically generates comprehensive documentation allowing you to execute and test endpoints directly from the browser.
+
 *   **Swagger UI**: Navigate to `/docs` to see endpoints, configuration, and a "Try it out" button for sending test requests.
 *   **ReDoc**: Navigate to `/redoc` for an alternative, modern documentation view.
 
@@ -249,7 +225,8 @@ if __name__ == "__main__":  # checks a condition before next step
 ## Routing and Parameters
 
 ### Path Parameters
-Path parameters are dynamic values placed in the URL (enclosed in curly braces `{}`) to filter specific resources. Providing Python type hints (e.g., `id: int`) enables ` FastAPIs automatic data validation; it will reject invalid data types`.
+
+Path parameters are dynamic values placed in the URL (enclosed in curly braces `{}`) to filter specific resources. Providing Python type hints (e.g., `id: int`) enables `FastAPI's automatic data validation; it will reject invalid data types`.
 
 ```python
 from fastapi import HTTPException  # imports FastAPI classes used below
@@ -306,6 +283,7 @@ def get_post(id:int):  # declares a helper or endpoint function
 ![alt text](ss/image-11.webp)
 
 ### Query Parameters
+
 Query parameters are optional or mandatory variables passed directly into the endpoint function. Assigning a default value (like `None`) makes them optional.
 
 ```python
@@ -323,6 +301,7 @@ def get_all_posts(limit: int = None): # here parameter is written because FastAP
 ## Pydantic Schemas and Data Validation
 
 ### Request Bodies
+
 For `POST`, `PUT`, or `PATCH` requests, data is typically sent in the **request body**. FastAPI uses Pydantic **schemas** to define and validate this data structure. Create a `schemas.py` file for these definitions.
 
 ```python
@@ -349,6 +328,7 @@ def create_post(post: PostCreate):  # declares a helper or endpoint function
 ```
 
 ### Response Models
+
 Specifying a response type using an arrow `->` or the `response_model` parameter improves API documentation (showing exact return formats in `/docs`) and adds a layer of protection. If the function attempts to return data missing fields defined in the response schema, FastAPI automatically raises an error.
 
 ---
@@ -403,7 +383,7 @@ def get_post(id:int)-> PostResponse:  # declares a helper or endpoint function
     return text_posts.get(id)  # returns data to the API caller
 
 @application.get("/posts")  # registers a GET route
-def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it | declares a helper or endpoint function
+def get_all_posts(limit: int = None): # here parameter is written because FastAPI will Auto Document it and Validate it | declares a helper or endpoint function
     if limit:  # checks a condition before next step
             return list(text_posts.values())[:limit]  # returns data to the API caller
     return text_posts  # returns data to the API caller
@@ -416,14 +396,19 @@ def create_post(post_body: PostCreate) -> PostResponse : # validates incoming (P
     return new_post  # returns data to the API caller
 ```
 
-![alt text](ss/image-13.webp) try create post
-![alt text](ss/image-14.webp) access that post
+![alt text](ss/image-13.webp)
+
+try create post
+![alt text](ss/image-14.webp)
+
+access that post
 
 ## Database Setup (SQLAlchemy)
 
 To store data persistently (preventing data loss on server refresh), an **ORM (Object Relational Mapping)** is used. SQLAlchemy allows writing Python-like code to define, retrieve, create, and update data instead of writing manual SQL queries.
 
 ### Creating Data Models
+
 Create a `db.py` file to handle database architecture. The `Base` class must inherit from `DeclarativeBase` to mark classes as data models.
 
 ```python
@@ -452,6 +437,7 @@ class Post(Base):  # declares a class used by the app
 *Note: A primary key represents the unique lookup entity for an entry in the database.*
 
 ### Async Engine and Session Initialization
+
 Configure the connection to an asynchronous SQLite database locally for testing. 
 
 ```python
@@ -476,6 +462,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:  # provides
 ```
 
 ### Lifespan Context Manager
+
 In `app.py`, link the table creation to the FastAPI startup process using a lifespan asynchronous context manager. This guarantees the database is ready when the server boots.
 
 ```python
@@ -579,7 +566,7 @@ def get_post(id:int)-> PostResponse:
     return text_posts.get(id)
 
 @application.get("/posts")
-def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it
+def get_all_posts(limit: int = None): # here parameter is written because FastAPI will Auto Document it and Validate it
     if limit:
             return list(text_posts.values())[:limit]
     return text_posts
@@ -633,7 +620,7 @@ comment old stuff, for a rewamp
 #     return text_posts.get(id)
 
 # @application.get("/posts")
-# def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it
+# def get_all_posts(limit: int = None): # here parameter is written because FastAPI will Auto Document it and Validate it
 #     if limit:
 #             return list(text_posts.values())[:limit]
 #     return text_posts
@@ -647,6 +634,7 @@ comment old stuff, for a rewamp
 ```
 
 ### Integrating ImageKit
+
 Create an `images.py` file to handle environment variables and ImageKit initialization. Variables are loaded exclusively on the back-end to prevent front-end security token exposure.
 
 ```python
@@ -665,7 +653,8 @@ imagekit = ImageKit(  # initializes ImageKit API client
 ```
 
 ### File Upload Endpoint
-Uploads require `multipart/form-data` instead of standard JSON request bodies. FastAPIs `UploadFile` receives the file object.
+
+Uploads require `multipart/form-data` instead of standard JSON request bodies. FastAPI's `UploadFile` receives the file object.
 
 Because server-side uploading (Backend Upload) is more secure, the API receives the file, duplicates it to a temporary file, uploads it to ImageKit, and then deletes the local temporary file.
 
@@ -733,6 +722,7 @@ async def upload_file(  # declares an async endpoint/helper
 ### CRUD Operations (Create, Read, Delete)
 
 ### Retrieving Data (Read)
+
 Use SQLAlchemy's `select` to query the database. To extract results dynamically, loop over the rows or use `.scalars().all()`.
 
 ```python
@@ -757,6 +747,7 @@ async def get_feed(session: AsyncSession = Depends(get_async_session)):  # decla
 ```
 
 ### Deleting Data
+
 Requires verifying exact matches (converting strings to UUIDs where necessary).
 
 ```python
@@ -844,7 +835,7 @@ async def upload_file(
     file: UploadFile = File(...),
     caption: str = Form(""),
     session: AsyncSession = Depends(get_async_session) # FastAPI Dependency Injection, it will automatically create a new session for each request and close it after the request is done
-) : 
+):
     post = Post( # dummy post 
         caption = caption,
         url = "dummy url",
@@ -917,7 +908,7 @@ async def get_feed(
 #     return text_posts.get(id)
 
 # @application.get("/posts")
-# def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it
+# def get_all_posts(limit: int = None): # here parameter is written because FastAPI will Auto Document it and Validate it
 #     if limit:
 #             return list(text_posts.values())[:limit]
 #     return text_posts
@@ -953,7 +944,9 @@ But Rn, using Imagekit's DAM
 
 ![alt text](ss/image-20.webp)
 ![alt text](ss/image-21.webp)
-![alt text](ss/image-22.webp) schema not error
+![alt text](ss/image-22.webp)
+
+schema not error
 
 Now Post Stored in DB and Image linked stored in DAM
 ![alt text](ss/image-23.webp)
@@ -1012,7 +1005,7 @@ async def upload_file(
     file: UploadFile = File(...),
     caption: str = Form(""),
     session: AsyncSession = Depends(get_async_session) # FastAPI Dependency Injection, it will automatically create a new session for each request and close it after the request is done
-) : 
+):
 
     temp_file_path = None
     try: 
@@ -1129,7 +1122,7 @@ async def get_feed(
 #     return text_posts.get(id)
 
 # @application.get("/posts")
-# def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it
+# def get_all_posts(limit: int = None): # here parameter is written because FastAPI will Auto Document it and Validate it
 #     if limit:
 #             return list(text_posts.values())[:limit]
 #     return text_posts
@@ -1170,15 +1163,20 @@ async def delete_post(
 ```
 
 ![alt text](ss/image-27.webp)
-![alt text](ss/image-28.webp) Deleted Success
+![alt text](ss/image-28.webp)
 
-![alt text](ss/image-29.webp) Not won't shown in GET
+Deleted Success
+
+![alt text](ss/image-29.webp)
+
+Not won't shown in GET
 
 ## User Authentication (FastAPI Users)
 
 To secure the application with JWT, the `fastapi-users` library automates standard processes (registration, login, verifying tokens).
 
 ### Database Relationships
+
 A **one-to-many** relationship links one user to many posts. The "child" (Post) holds the `ForeignKey` linking it to the parent (User).
 
 ```python
@@ -1199,6 +1197,7 @@ async def get_user_db(session: AsyncSession = Depends(get_async_session)):  # de
 ```
 
 ### JWT Strategy and User Manager
+
 Create a `users.py` file to handle authentication backend configuration. Note that `SECRET` should be a complex, unshared string used to encode tokens.
 
 ```python
@@ -1243,6 +1242,7 @@ current_active_user = fastapi_users.current_user(active=True)  # assigns value f
 *Note: Token lifetime dictates how long a token is valid before requiring a re-login. Longer limits are convenient but pose security vulnerabilities.*
 
 ### Injecting Auth Routes
+
 In `app.py`, inject the pre-built routing functionalities mapped to custom `UserRead`, `UserCreate`, and `UserUpdate` Pydantic schemas (inheriting from `schemas.BaseUser` in `schemas.py`).
 
 ```python
@@ -1260,6 +1260,7 @@ app.include_router(  # shows this line as part of the example output
 ```
 
 ### Protecting Endpoints
+
 To make a route protected (requiring a user to be signed in), pass the `current_active_user` as a dependency.
 
 ```python
@@ -1276,7 +1277,7 @@ async def upload_file(  # declares an async endpoint/helper
 
 Additionally, apply authorization logic within the function (e.g., verifying `post.user_id == user.id` before allowing deletions) to enforce user-specific permissions.
 
-### Code(s)
+### Code(s) — Authentication
 
 New Routes came out because of FastAPI Users
 ![alt text](ss/image-30.webp)
@@ -1288,17 +1289,27 @@ ed791fc4-88c8-439b-9add-7ec66d18678e
 kintsugiprogrammer@gmail.com
 #ALS12345
 
-![alt text](ss/image-33.webp) Login
-![alt text](ss/image-34.webp) Logged in and got token, get used in any request
-![alt text](ss/image-35.webp) See Current User, and super long token associated in my request 
+![alt text](ss/image-33.webp)
+
+Login
+![alt text](ss/image-34.webp)
+
+Logged in and got token, get used in any request
+![alt text](ss/image-35.webp)
+
+See Current User, and super long token associated in my request 
 
 For protecting routes, i can add dependency that for forces router to get the current active user
 
 after it
 
-![alt text](ss/image-36.webp) We can see other users posts, no ownership
+![alt text](ss/image-36.webp)
 
-![alt text](ss/image-37.webp) Even if other user try to delete others, it will not be authorised
+We can see other users posts, no ownership
+
+![alt text](ss/image-37.webp)
+
+Even if other user try to delete others, it will not be authorised
 
 ```py
 # users.py
@@ -1504,7 +1515,7 @@ async def upload_file(
     user: User = Depends(current_active_user), # this will ensure that only authenticated users can access this route, and it will also give us the current user object that we can use in our route, so that we can associate the uploaded file with the user who uploaded it, and we can also use the user information for any other purpose that we want in this route, such as logging, etc.
     caption: str = Form(""),
     session: AsyncSession = Depends(get_async_session) # FastAPI Dependency Injection, it will automatically create a new session for each request and close it after the request is done
-) : 
+):
 
     temp_file_path = None
     try: 
@@ -1653,7 +1664,7 @@ async def delete_post(
 #     return text_posts.get(id)
 
 # @application.get("/posts")
-# def get_all_posts(limit: int = None)  : # here parameter is written because FastAPI will Auto Document it and Validate it
+# def get_all_posts(limit: int = None): # here parameter is written because FastAPI will Auto Document it and Validate it
 #     if limit:
 #             return list(text_posts.values())[:limit]
 #     return text_posts
@@ -1667,7 +1678,9 @@ async def delete_post(
 ```
 
 ## ImageKit API URL Transformations
+
 ImageKit allows real-time dynamic manipulation of files directly through query strings or URL paths, enhancing UI flexibility without reprocessing base files.
+
 *   **Cropping/Sizing**: `tr=w-300,h-300` directly modifies width and height.
 *   **Enhancements**: `tr=e-contrast` (increases contrast), `tr=e-sharpen` (sharpens image).
 *   **Text/Overlays**: Add captions via URL string overlays, modifying sizes using attributes like `font-size_100`.
@@ -1682,6 +1695,7 @@ https://ik.imagekit.io/mwg1upyo1/products/image-6_mJSJ4dfaR.png to
 
 
 ## Front-End Integration (Streamlit context)
+
 A simple frontend like Streamlit interfaces with the backend by executing HTTP operations mapped to the API. Once the backend successfully registers or logs in the user (`/auth/jwt/login`), the frontend saves the resulting access token into a session state. For any protected operations (like viewing the feed or uploading files), this token is included in the request headers (formatted as `Bearer <token>`).
 
 ### Code(s)
