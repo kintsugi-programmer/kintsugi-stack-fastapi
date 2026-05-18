@@ -7,35 +7,6 @@
 
 ![alt text](ss/unnamed.webp)
 
-```mermaid
-flowchart TD
-    subgraph Frontend[Frontend - Streamlit]
-        A[Login/Register Page]
-        B[Media Upload Page]
-        C[Feed View Page]
-    end
-
-    subgraph Backend[Backend - FastAPI]
-        D[FastAPI Application]
-        E[JWT Authentication FastAPI Users]
-        F[CRUD Endpoints /upload, /feed, /post/{id}]
-        G[Pydantic Validation Request/Response Schemas]
-        H[SQLAlchemy ORM Async Engine]
-        D --> E
-        D --> F
-        D --> G
-        D --> H
-    end
-
-    subgraph Storage[External Services]
-        I[ImageKit DAM Image/Video Hosting]
-        J[(SQLite Database Persistent Storage)]
-    end
-
-    Frontend -->|HTTP Requests| Backend
-    Backend -->|File Upload| I
-    Backend -->|CRUD Operations| J
-```
 
 ## Project Overview
 
@@ -62,28 +33,6 @@ A **URL** (Uniform Resource Locator) consists of several core components:
 *   **Path (or Endpoint)**: The specific route, page, or resource being accessed from the domain (e.g., `/courses/python` or `/api/post`). APIs use custom endpoints to control access to particular resources.
 *   **Query Parameter**: Extra information used to filter a page or retrieve specific data. It always comes after a question mark `?` and multiple parameters are separated by ampersands `&` (e.g., `?video=123&page=2`).
 
-```mermaid
-flowchart TD
-    URL[Full URL] --> Scheme[Scheme https://]
-    URL --> Domain[Domain techwithtim.net]
-    URL --> Path[Path / Endpoint /api/posts]
-    URL --> Query[Query Parameters ?page=2&limit=10]
-
-    Path --> PP[Path Parameter /posts/{id} - /posts/5]
-
-    Query --> QP1[page=2 specifies page number]
-    Query --> QP2[limit=10 max results per page]
-
-    subgraph Methods[HTTP Methods]
-        GET[GET - Retrieve data]
-        POST[POST - Create data]
-        PUT[PUT - Update data]
-        DELETE[DELETE - Remove data]
-    end
-
-    Path -.-> GET
-    Query -.-> GET
-```
 
 ![alt text](ss/image.webp)
 
@@ -114,28 +63,6 @@ The communication flow between a front-end (client) and back-end (API) is handle
 *   **Body**: Additional data returned to the front-end (e.g., the requested post data). Format is often defined by the headers.
 *   **Headers**: Security information, authentication details, or data types (e.g., `application/json`).
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API as API Server
-
-    Note over Client,API: REQUEST
-    Client->>API: METHOD /path?query=value
-    Client->>API: Headers: {Authorization, Content-Type}
-    Client->>API: Body: {data} (for POST/PUT/PATCH)
-
-    Note over Client,API: RESPONSE
-    API-->>Client: Status Code: 200/201/404/403/500
-    API-->>Client: Headers: {Content-Type, Set-Cookie}
-    API-->>Client: Body: {response data}
-
-    Note over Client,API: Common Status Codes
-    Note over Client: 200 OK
-    Note over Client: 201 Created
-    Note over Client: 404 Not Found
-    Note over Client: 403 Forbidden
-    Note over Client: 500 Server Error
-```
 
 ![alt text](ss/image-1.webp)
 
@@ -143,31 +70,6 @@ sequenceDiagram
 
 Simple APIs Example
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API as FastAPI Server
-    participant Store as In-Memory Store
-
-    Client->>API: GET /hello-world
-    API-->>Client: {message: hello world}
-
-    Client->>API: GET /posts
-    API->>Store: Fetch all posts
-    Store-->>API: text_posts dict
-    API-->>Client: [{id, title, content}, ...]
-
-    Client->>API: GET /posts/1
-    API->>Store: Check post exists
-    Store-->>API: Post found
-    API-->>Client: {title, content}
-
-    Client->>API: POST /post
-    Note over Client,API: {title, content} JSON
-    API->>Store: Generate new id
-    API->>Store: Save to dict
-    API-->>Client: {title, content, id}
-```
 
 ![alt text](ss/image-3.webp)
 
@@ -182,39 +84,6 @@ sequenceDiagram
 3.  The client stores this token and sends it along in the headers of all future requests.
 4.  The API verifies the token on every request to ensure the user has permission to perform the action.
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API as FastAPI Backend
-    participant DB as Database
-
-    Note over Client,DB: Registration
-    Client->>API: POST /auth/register
-    Note over Client,API: {email, password}
-    API->>DB: Create user (hash password)
-    DB-->>API: User created
-    API-->>Client: 201 Created
-
-    Note over Client,DB: Login - JWT Token
-    Client->>API: POST /auth/jwt/login
-    Note over Client,API: {username, password} (form data)
-    API->>DB: Verify credentials
-    DB-->>API: User authenticated
-    API-->>Client: {access_token, token_type}
-
-    Note over Client,DB: Authenticated Requests
-    Client->>API: GET /feed
-    Note over Client,API: Authorization: Bearer &lt;token&gt;
-    API->>API: Decode & verify JWT
-    API->>DB: Query posts (if valid)
-    DB-->>API: Return posts
-    API-->>Client: Return JSON response
-
-    Note over Client,DB: Token Expired
-    Client->>API: GET /feed (expired token)
-    API->>API: Decode JWT - expired
-    API-->>Client: 401 Unauthorized
-```
 
 ![alt text](ss/image-5.webp)
 
@@ -238,24 +107,6 @@ uv init .  # initializes project metadata files
 ```
 This creates isolated dependencies in your folder, generating a `main.py` and a `pyproject.toml` file.
 
-```mermaid
-flowchart LR
-    subgraph Setup[Environment Setup]
-        A[python3 -m venv .venv] --> B[Virtual environment created]
-        B --> C[pip install uv]
-        C --> D[uv add fastapi, uvicorn, sqlalchemy, imagekitio, etc.]
-    end
-
-    subgraph Env[Configuration]
-        E[.env file] --> F[IMAGEKIT_PRIVATE_KEY]
-        E --> G[IMAGEKIT_PUBLIC_KEY]
-        E --> H[IMAGEKIT_URL_ENDPOINT]
-        E --> I[JWT_SECRET]
-        E --> J[DATABASE_URL]
-    end
-
-    Setup --> Env
-```
 
 ### Installing Dependencies
 
@@ -295,23 +146,6 @@ from fastapi import FastAPI  # imports FastAPI classes used below
 app = FastAPI()  # creates the FastAPI application instance
 ```
 
-```mermaid
-graph TD
-    subgraph Project[Project Structure]
-        A[app/] --- B[__init__.py]
-        A --- C[app.py FastAPI instance + routes]
-        A --- D[schemas.py Pydantic models]
-        A --- E[db.py SQLAlchemy models + engine]
-        A --- F[users.py JWT config]
-        A --- G[images.py ImageKit client]
-    end
-
-    subgraph Init[App Initialization]
-        H[from fastapi import FastAPI] --> I[app = FastAPI()]
-        I --> J[Creates ASGI application]
-        J --> K[Ready to register routes, lifespan, middleware]
-    end
-```
 
 ### Creating Your First Endpoint
 
@@ -344,25 +178,6 @@ Run the server via the terminal:
 uv run main.py  # runs the app inside project env
 ```
 
-```mermaid
-flowchart LR
-    A[uv run main.py] --> B[main.py loads]
-    B --> C{__name__ == __main__?}
-    C -->|Yes| D[uvicorn.run]
-    C -->|No| E[Module import - noop]
-
-    D --> F[Target: app.app:app]
-    D --> G[Host: 0.0.0.0]
-    D --> H[Port: 8000]
-    D --> I[Reload: True]
-
-    F --> J[FastAPI instance created]
-    J --> K[Lifespan context starts]
-    K --> L[create_db_and_tables]
-    L --> M[Server ready at http://localhost:8000]
-
-    I -.->|File change detected| D
-```
 
 ![alt text](ss/image-6.webp)
 
@@ -488,29 +303,6 @@ def get_all_posts(limit: int = None): # here parameter is written because FastAP
     return text_posts  # returns data to the API caller
 ```
 
-```mermaid
-flowchart TD
-    subgraph PathParams[Path Parameters]
-        P1[GET /posts/{id}] --> P2[id: int validation]
-        P2 --> P3{id in text_posts?}
-        P3 -->|Yes| P4[Return matching post]
-        P3 -->|No| P5[404 Not Found]
-    end
-
-    subgraph QueryParams[Query Parameters]
-        Q1[GET /posts?limit=5] --> Q2{limit provided?}
-        Q2 -->|Yes - limit:int| Q3[Return first N posts]
-        Q2 -->|No - None| Q4[Return all posts]
-    end
-
-    subgraph POST[POST Endpoint]
-        R1[POST /post] --> R2[Receive PostCreate body]
-        R2 --> R3[Validate via Pydantic]
-        R3 --> R4[Assign new id]
-        R4 --> R5[Store in text_posts]
-        R5 --> R6[Return created post]
-    end
-```
 
 ![alt text](ss/image-12.webp)
 
@@ -549,25 +341,6 @@ def create_post(post: PostCreate):  # declares a helper or endpoint function
 
 Specifying a response type using an arrow `->` or the `response_model` parameter improves API documentation (showing exact return formats in `/docs`) and adds a layer of protection. If the function attempts to return data missing fields defined in the response schema, FastAPI automatically raises an error.
 
-```mermaid
-flowchart LR
-    subgraph Request[Request Validation]
-        A[Client sends JSON body] --> B[FastAPI parses body]
-        B --> C[Validate against PostCreate schema]
-        C --> D{title: str? content: str?}
-        D -->|Valid| E[Execute endpoint]
-        D -->|Invalid| F[422 Validation Error]
-    end
-
-    subgraph Response[Response Validation]
-        G[Function returns dict] --> H[Validate against PostResponse schema]
-        H --> I{All required fields present?}
-        I -->|Yes| J[Return JSON to client]
-        I -->|No| K[500 Internal Error]
-    end
-
-    E --> G
-```
 
 ---
 ```py
@@ -699,38 +472,6 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:  # provides
         yield session  # shows this line as part of the example output
 ```
 
-```mermaid
-flowchart TD
-    subgraph Models[Database Models - db.py]
-        M1[Base DeclarativeBase] --> M2[Post class]
-        M2 --> M2_fields[id: UUID PK]
-        M2 --> M2_c[caption: Text]
-        M2 --> M2_u[url: String]
-        M2 --> M2_f[file_type: String]
-        M2 --> M2_fn[file_name: String]
-        M2 --> M2_ca[created_at: DateTime]
-    end
-
-    subgraph Engine[Async Engine]
-        E1[DATABASE_URL sqlite+aiosqlite:///./test.db] --> E2[create_async_engine]
-        E2 --> E3[async_sessionmaker Session Factory]
-    end
-
-    subgraph Startup[Server Startup - lifespan]
-        S1[FastAPI lifespan context manager] --> S2[create_db_and_tables]
-        S2 --> S3[Base.metadata.create_all]
-        S3 --> S4[Tables created in database]
-    end
-
-    subgraph DI[Dependency Injection]
-        D1[get_async_session] --> D2[Create new session per request]
-        D2 --> D3[yield session to endpoint]
-    end
-
-    Models --> Engine
-    Engine --> Startup
-    Engine --> DI
-```
 
 ### Lifespan Context Manager
 
@@ -989,35 +730,6 @@ async def upload_file(  # declares an async endpoint/helper
         file.file.close()  # shows this line as part of the example output
 ```
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API as FastAPI
-    participant Temp as Temp File
-    participant IK as ImageKit
-    participant DB as SQLite
-
-    Client->>API: POST /upload
-    API->>API: Receive UploadFile + caption
-
-    API->>Temp: Create NamedTemporaryFile
-    API->>Temp: Copy file bytes (shutil.copyfileobj)
-
-    API->>IK: upload(file=temp_file, file_name, folder, tags)
-    IK-->>API: Return upload_result with URL
-
-    Note over API: Classify file_type (video/photo from content_type)
-
-    API->>DB: Post(caption, url, file_type, file_name)
-    API->>DB: session.add() → session.commit() → session.refresh()
-    DB-->>API: Post with generated id & created_at
-
-    API-->>Client: Return post object
-
-    Note over API: finally block:
-    Note over API: os.unlink(temp_file_path)
-    Note over API: file.file.close()
-```
 
 *Note: `Depends(get_async_session)` is an example of Dependency Injection. It runs the provided function and passes the return value dynamically as a variable into the endpoint.*
 
@@ -1073,26 +785,6 @@ async def delete_post(post_id: str, session: AsyncSession = Depends(get_async_se
         raise HTTPException(status_code=500, detail=str(e))  # returns an HTTP error for invalid request
 ```
 
-```mermaid
-flowchart TD
-    subgraph CRUD[CRUD Operations]
-        C[CREATE POST /upload] --> C1[Receive file + caption]
-        C1 --> C2[Upload to ImageKit]
-        C2 --> C3[Save Post to DB]
-        C3 --> C4[Return post with id]
-
-        R[READ GET /feed] --> R1[Query all posts ORDER BY created_at DESC]
-        R1 --> R2[Format response with is_owner & email]
-        R2 --> R3[Return posts array]
-
-        D[DELETE DELETE /post/{id}] --> D1[Parse UUID from string]
-        D1 --> D2[Find post by id]
-        D2 --> D3{Post exists?}
-        D3 -->|No| D4[404 Not Found]
-        D3 -->|Yes| D5[Delete from DB]
-        D5 --> D6[204 Success]
-    end
-```
 
 ### Code(s)
 
@@ -1519,29 +1211,6 @@ async def get_user_db(session: AsyncSession = Depends(get_async_session)):  # de
     yield SQLAlchemyUserDatabase(session, User)  # shows this line as part of the example output
 ```
 
-```mermaid
-erDiagram
-    User ||--o{ Post : "has many"
-
-    User {
-        uuid id PK
-        string email
-        string hashed_password
-        boolean is_active
-        boolean is_superuser
-        boolean is_verified
-    }
-
-    Post {
-        uuid id PK
-        uuid user_id FK
-        text caption
-        string url
-        string file_type
-        string file_name
-        datetime created_at
-    }
-```
 
 ### JWT Strategy and User Manager
 
@@ -1588,32 +1257,6 @@ current_active_user = fastapi_users.current_user(active=True)  # assigns value f
 ```
 *Note: Token lifetime dictates how long a token is valid before requiring a re-login. Longer limits are convenient but pose security vulnerabilities.*
 
-```mermaid
-flowchart TD
-    subgraph users_py[users.py - Auth Config]
-        A[SECRET] --> B[JWTStrategy lifetime=3600s]
-        C[BearerTransport tokenUrl=auth/jwt/login] --> D[AuthenticationBackend name=jwt]
-        B --> D
-        D --> E[FastAPIUsers]
-        E --> F[current_active_user Dependency]
-    end
-
-    subgraph app_py[app.py - Route Injection]
-        G[fastapi_users.get_auth_router] --> H[/auth/jwt/login POST]
-        G --> I[/auth/jwt/logout POST]
-
-        J[fastapi_users.get_register_router] --> K[/auth/register POST]
-
-        L[fastapi_users.get_reset_password_router] --> M[/auth/forgot-password POST]
-        L --> N[/auth/reset-password POST]
-
-        O[fastapi_users.get_verify_router] --> P[/auth/request-verify POST]
-        O --> Q[/auth/verify POST]
-
-        R[fastapi_users.get_users_router] --> S[/users/me GET/PATCH]
-        R --> T[/users/{id} GET/PATCH/DELETE]
-    end
-```
 
 ### Injecting Auth Routes
 
@@ -1651,36 +1294,6 @@ async def upload_file(  # declares an async endpoint/helper
 
 Additionally, apply authorization logic within the function (e.g., verifying `post.user_id == user.id` before allowing deletions) to enforce user-specific permissions.
 
-```mermaid
-flowchart TD
-    A[Request arrives at endpoint] --> B{Has valid JWT?}
-    B -->|No| C[401 Unauthorized]
-    B -->|Yes| D{Is user active?}
-    D -->|No| E[401 Inactive user]
-    D -->|Yes| F[Bind current_user to request]
-
-    F --> G[Execute endpoint logic]
-
-    subgraph Upload [/upload]
-        H[Create Post with user.id]
-    end
-
-    subgraph Delete [/post/{id}]
-        I[Fetch post from DB]
-        J{post.user_id == user.id?}
-        J -->|Yes| K[Delete post]
-        J -->|No| L[403 Forbidden]
-    end
-
-    subgraph Feed [/feed]
-        M[Fetch all posts]
-        N[Add is_owner flag per user]
-    end
-
-    G --> H
-    G --> I
-    G --> M
-```
 
 ### Code(s) — Authentication
 
@@ -2098,21 +1711,6 @@ https://ik.imagekit.io/mwg1upyo1/products/image-6_mJSJ4dfaR.png to
 - https://ik.imagekit.io/mwg1upyo1/products/image-6_mJSJ4dfaR.png?tr=w-300,h-300
 - https://ik.imagekit.io/mwg1upyo1/tr=w-300,h-300/products/image-6_mJSJ4dfaR.png
 
-```mermaid
-flowchart LR
-    A[Original Image ik.imagekit.io/.../image.png] --> B{Apply Transformations}
-    B --> C[Resize tr=w-300,h-300]
-    B --> D[Enhance tr=e-contrast, e-sharpen]
-    B --> E[Text Overlay l-text,ie-...,fs-100]
-    B --> F[Video Frame ik-thumbnail.jpg]
-    B --> G[Compress 90% quality - 3x smaller]
-    C --> H[Transformed URL .../tr:w-300,h-300/.../image.png]
-    D --> H
-    E --> H
-    F --> H
-    G --> H
-    H --> I[Served to Client]
-```
 
 ## Front-End Integration (Streamlit context)
 
@@ -2306,48 +1904,6 @@ else:
         upload_page()
 ```
 
-```mermaid
-sequenceDiagram
-    participant U as User/Browser
-    participant S as Streamlit Frontend
-    participant API as FastAPI Backend
-    participant DB as SQLite Database
-    participant IK as ImageKit DAM
-
-    Note over U,IK: Login/Register
-    U->>S: Enter email & password
-    S->>API: POST /auth/jwt/login (form data)
-    API->>DB: Verify credentials
-    DB-->>API: User found
-    API-->>S: JWT access_token
-    S->>S: Store token in session_state
-
-    Note over U,IK: Upload Media
-    U->>S: Select file + caption
-    S->>API: POST /upload (multipart + Bearer token)
-    API->>IK: Upload file to ImageKit
-    IK-->>API: Return URL
-    API->>DB: Save Post (URL, caption, user_id)
-    DB-->>API: Post created
-    API-->>S: Return post
-    S-->>U: Show success
-
-    Note over U,IK: View Feed
-    U->>S: Open feed page
-    S->>API: GET /feed (Bearer token)
-    API->>DB: SELECT posts + users
-    DB-->>API: Posts with user data
-    API-->>S: Return posts array
-    S-->>U: Render media with captions
-
-    Note over U,IK: Delete Post (owner only)
-    U->>S: Click delete button
-    S->>API: DELETE /post/{id} (Bearer token)
-    API->>DB: Verify ownership (user_id match)
-    DB-->>API: Post deleted
-    API-->>S: success response
-    S-->>U: Refresh feed
-```
 
 ![alt text](ss/image-38.webp)
 
