@@ -17,10 +17,10 @@ flowchart TD
 
     subgraph Backend[Backend - FastAPI]
         D[FastAPI Application]
-        E[JWT Authentication<br/>FastAPI Users]
-        F[CRUD Endpoints<br/>/upload, /feed, /post/{id}]
-        G[Pydantic Validation<br/>Request/Response Schemas]
-        H[SQLAlchemy ORM<br/>Async Engine]
+        E[JWT Authentication FastAPI Users]
+        F[CRUD Endpoints /upload, /feed, /post/{id}]
+        G[Pydantic Validation Request/Response Schemas]
+        H[SQLAlchemy ORM Async Engine]
         D --> E
         D --> F
         D --> G
@@ -28,8 +28,8 @@ flowchart TD
     end
 
     subgraph Storage[External Services]
-        I[ImageKit DAM<br/>Image/Video Hosting]
-        J[(SQLite Database<br/>Persistent Storage)]
+        I[ImageKit DAM Image/Video Hosting]
+        J[(SQLite Database Persistent Storage)]
     end
 
     Frontend -->|HTTP Requests| Backend
@@ -64,15 +64,15 @@ A **URL** (Uniform Resource Locator) consists of several core components:
 
 ```mermaid
 flowchart TD
-    URL[Full URL] --> Scheme[Scheme<br/>https://]
-    URL --> Domain[Domain<br/>techwithtim.net]
-    URL --> Path[Path / Endpoint<br/>/api/posts]
-    URL --> Query[Query Parameters<br/>?page=2&limit=10]
+    URL[Full URL] --> Scheme[Scheme https://]
+    URL --> Domain[Domain techwithtim.net]
+    URL --> Path[Path / Endpoint /api/posts]
+    URL --> Query[Query Parameters ?page=2&limit=10]
 
-    Path --> PP[Path Parameter<br/>/posts/{id} - /posts/5]
+    Path --> PP[Path Parameter /posts/{id} - /posts/5]
 
-    Query --> QP1[page=2<br/>specifies page number]
-    Query --> QP2[limit=10<br/>max results per page]
+    Query --> QP1[page=2 specifies page number]
+    Query --> QP2[limit=10 max results per page]
 
     subgraph Methods[HTTP Methods]
         GET[GET - Retrieve data]
@@ -241,9 +241,9 @@ This creates isolated dependencies in your folder, generating a `main.py` and a 
 ```mermaid
 flowchart LR
     subgraph Setup[Environment Setup]
-        A[python3 -m venv .venv] --> B[Virtual environment<br/>created]
+        A[python3 -m venv .venv] --> B[Virtual environment created]
         B --> C[pip install uv]
-        C --> D[uv add fastapi,<br/>uvicorn, sqlalchemy,<br/>imagekitio, etc.]
+        C --> D[uv add fastapi, uvicorn, sqlalchemy, imagekitio, etc.]
     end
 
     subgraph Env[Configuration]
@@ -299,17 +299,17 @@ app = FastAPI()  # creates the FastAPI application instance
 graph TD
     subgraph Project[Project Structure]
         A[app/] --- B[__init__.py]
-        A --- C[app.py<br/>FastAPI instance + routes]
-        A --- D[schemas.py<br/>Pydantic models]
-        A --- E[db.py<br/>SQLAlchemy models + engine]
-        A --- F[users.py<br/>JWT config]
-        A --- G[images.py<br/>ImageKit client]
+        A --- C[app.py FastAPI instance + routes]
+        A --- D[schemas.py Pydantic models]
+        A --- E[db.py SQLAlchemy models + engine]
+        A --- F[users.py JWT config]
+        A --- G[images.py ImageKit client]
     end
 
     subgraph Init[App Initialization]
         H[from fastapi import FastAPI] --> I[app = FastAPI()]
         I --> J[Creates ASGI application]
-        J --> K[Ready to register routes,<br/>lifespan, middleware]
+        J --> K[Ready to register routes, lifespan, middleware]
     end
 ```
 
@@ -359,7 +359,7 @@ flowchart LR
     F --> J[FastAPI instance created]
     J --> K[Lifespan context starts]
     K --> L[create_db_and_tables]
-    L --> M[Server ready at<br/>http://localhost:8000]
+    L --> M[Server ready at http://localhost:8000]
 
     I -.->|File change detected| D
 ```
@@ -553,15 +553,15 @@ Specifying a response type using an arrow `->` or the `response_model` parameter
 flowchart LR
     subgraph Request[Request Validation]
         A[Client sends JSON body] --> B[FastAPI parses body]
-        B --> C[Validate against<br/>PostCreate schema]
-        C --> D{title: str?<br/>content: str?}
+        B --> C[Validate against PostCreate schema]
+        C --> D{title: str? content: str?}
         D -->|Valid| E[Execute endpoint]
         D -->|Invalid| F[422 Validation Error]
     end
 
     subgraph Response[Response Validation]
-        G[Function returns dict] --> H[Validate against<br/>PostResponse schema]
-        H --> I{All required<br/>fields present?}
+        G[Function returns dict] --> H[Validate against PostResponse schema]
+        H --> I{All required fields present?}
         I -->|Yes| J[Return JSON to client]
         I -->|No| K[500 Internal Error]
     end
@@ -702,7 +702,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:  # provides
 ```mermaid
 flowchart TD
     subgraph Models[Database Models - db.py]
-        M1[Base<br/>DeclarativeBase] --> M2[Post class]
+        M1[Base DeclarativeBase] --> M2[Post class]
         M2 --> M2_fields[id: UUID PK]
         M2 --> M2_c[caption: Text]
         M2 --> M2_u[url: String]
@@ -712,19 +712,19 @@ flowchart TD
     end
 
     subgraph Engine[Async Engine]
-        E1[DATABASE_URL<br/>sqlite+aiosqlite:///./test.db] --> E2[create_async_engine]
-        E2 --> E3[async_sessionmaker<br/>Session Factory]
+        E1[DATABASE_URL sqlite+aiosqlite:///./test.db] --> E2[create_async_engine]
+        E2 --> E3[async_sessionmaker Session Factory]
     end
 
     subgraph Startup[Server Startup - lifespan]
-        S1[FastAPI lifespan<br/>context manager] --> S2[create_db_and_tables]
+        S1[FastAPI lifespan context manager] --> S2[create_db_and_tables]
         S2 --> S3[Base.metadata.create_all]
-        S3 --> S4[Tables created<br/>in database]
+        S3 --> S4[Tables created in database]
     end
 
     subgraph DI[Dependency Injection]
-        D1[get_async_session] --> D2[Create new session<br/>per request]
-        D2 --> D3[yield session<br/>to endpoint]
+        D1[get_async_session] --> D2[Create new session per request]
+        D2 --> D3[yield session to endpoint]
     end
 
     Models --> Engine
@@ -1006,7 +1006,7 @@ sequenceDiagram
     API->>IK: upload(file=temp_file, file_name, folder, tags)
     IK-->>API: Return upload_result with URL
 
-    Note over API: Classify file_type<br/>(video/photo from content_type)
+    Note over API: Classify file_type (video/photo from content_type)
 
     API->>DB: Post(caption, url, file_type, file_name)
     API->>DB: session.add() → session.commit() → session.refresh()
@@ -1076,16 +1076,16 @@ async def delete_post(post_id: str, session: AsyncSession = Depends(get_async_se
 ```mermaid
 flowchart TD
     subgraph CRUD[CRUD Operations]
-        C[CREATE<br/>POST /upload] --> C1[Receive file + caption]
+        C[CREATE POST /upload] --> C1[Receive file + caption]
         C1 --> C2[Upload to ImageKit]
         C2 --> C3[Save Post to DB]
         C3 --> C4[Return post with id]
 
-        R[READ<br/>GET /feed] --> R1[Query all posts<br/>ORDER BY created_at DESC]
-        R1 --> R2[Format response with<br/>is_owner & email]
+        R[READ GET /feed] --> R1[Query all posts ORDER BY created_at DESC]
+        R1 --> R2[Format response with is_owner & email]
         R2 --> R3[Return posts array]
 
-        D[DELETE<br/>DELETE /post/{id}] --> D1[Parse UUID from string]
+        D[DELETE DELETE /post/{id}] --> D1[Parse UUID from string]
         D1 --> D2[Find post by id]
         D2 --> D3{Post exists?}
         D3 -->|No| D4[404 Not Found]
@@ -1591,11 +1591,11 @@ current_active_user = fastapi_users.current_user(active=True)  # assigns value f
 ```mermaid
 flowchart TD
     subgraph users_py[users.py - Auth Config]
-        A[SECRET] --> B[JWTStrategy<br/>lifetime=3600s]
-        C[BearerTransport<br/>tokenUrl=auth/jwt/login] --> D[AuthenticationBackend<br/>name=jwt]
+        A[SECRET] --> B[JWTStrategy lifetime=3600s]
+        C[BearerTransport tokenUrl=auth/jwt/login] --> D[AuthenticationBackend name=jwt]
         B --> D
         D --> E[FastAPIUsers]
-        E --> F[current_active_user<br/>Dependency]
+        E --> F[current_active_user Dependency]
     end
 
     subgraph app_py[app.py - Route Injection]
@@ -2100,13 +2100,13 @@ https://ik.imagekit.io/mwg1upyo1/products/image-6_mJSJ4dfaR.png to
 
 ```mermaid
 flowchart LR
-    A[Original Image<br/>ik.imagekit.io/.../image.png] --> B{Apply Transformations}
-    B --> C[Resize<br/>tr=w-300,h-300]
-    B --> D[Enhance<br/>tr=e-contrast,<br/>e-sharpen]
-    B --> E[Text Overlay<br/>l-text,ie-...,fs-100]
-    B --> F[Video Frame<br/>ik-thumbnail.jpg]
-    B --> G[Compress<br/>90% quality - 3x smaller]
-    C --> H[Transformed URL<br/>.../tr:w-300,h-300/.../image.png]
+    A[Original Image ik.imagekit.io/.../image.png] --> B{Apply Transformations}
+    B --> C[Resize tr=w-300,h-300]
+    B --> D[Enhance tr=e-contrast, e-sharpen]
+    B --> E[Text Overlay l-text,ie-...,fs-100]
+    B --> F[Video Frame ik-thumbnail.jpg]
+    B --> G[Compress 90% quality - 3x smaller]
+    C --> H[Transformed URL .../tr:w-300,h-300/.../image.png]
     D --> H
     E --> H
     F --> H
