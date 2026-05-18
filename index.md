@@ -1,6 +1,7 @@
 # FastAPI
 
-- [https://github.com/kintsugi-programmer/kintsugi-stack-fastapi](https://github.com/kintsugi-programmer/kintsugi-stack-fastapi)
+- Repository: [github.com/kintsugi-programmer/kintsugi-stack-fastapi](https://github.com/kintsugi-programmer/kintsugi-stack-fastapi)
+- Documentation: [codingismeditation.github.io/exploration/fastapi](https://codingismeditation.github.io/exploration/fastapi/index.html)
 
 > Full-Stack Media Sharing App: FastAPI, FastAPI Users, JWT, SQLAlchemy, ImageKit & Streamlit
 
