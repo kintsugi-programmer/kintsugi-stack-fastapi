@@ -5,8 +5,11 @@
 
 > Full-Stack Media Sharing App: FastAPI, FastAPI Users, JWT, SQLAlchemy, ImageKit & Streamlit
 
-![alt text](ss/unnamed.webp)
+![alt text](images/unnamed.webp)
 
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin-bottom: 1em;">
+<iframe src="https://www.youtube.com/embed/CUszilscEPU?si=TmXOSb1AEdIKJwF1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-origin-cross-origin" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+</div>
 
 ## Project Overview
 
@@ -34,7 +37,7 @@ A **URL** (Uniform Resource Locator) consists of several core components:
 *   **Query Parameter**: Extra information used to filter a page or retrieve specific data. It always comes after a question mark `?` and multiple parameters are separated by ampersands `&` (e.g., `?video=123&page=2`).
 
 
-![alt text](ss/image.webp)
+![alt text](images/image.webp)
 
 ### The Request and Response Structure
 
@@ -64,16 +67,16 @@ The communication flow between a front-end (client) and back-end (API) is handle
 *   **Headers**: Security information, authentication details, or data types (e.g., `application/json`).
 
 
-![alt text](ss/image-1.webp)
+![alt text](images/image-1.webp)
 
-![alt text](ss/image-2.webp)
+![alt text](images/image-2.webp)
 
 Simple APIs Example
 
 
-![alt text](ss/image-3.webp)
+![alt text](images/image-3.webp)
 
-![alt text](ss/image-4.webp)
+![alt text](images/image-4.webp)
 
 ### JWT Authentication Primer
 
@@ -85,7 +88,7 @@ Simple APIs Example
 4.  The API verifies the token on every request to ensure the user has permission to perform the action.
 
 
-![alt text](ss/image-5.webp)
+![alt text](images/image-5.webp)
 
 ## Environment and Setup
 
@@ -179,7 +182,7 @@ uv run main.py  # runs the app inside project env
 ```
 
 
-![alt text](ss/image-6.webp)
+![alt text](images/image-6.webp)
 
 ```text
 http://localhost:8000/  # shows local endpoint URL to open
@@ -194,8 +197,8 @@ FastAPI automatically generates comprehensive documentation allowing you to exec
 *   **Swagger UI**: Navigate to `/docs` to see endpoints, configuration, and a "Try it out" button for sending test requests.
 *   **ReDoc**: Navigate to `/redoc` for an alternative, modern documentation view.
 
-![alt text](ss/image-7.webp)
-![alt text](ss/image-8.webp)
+![alt text](images/image-7.webp)
+![alt text](images/image-8.webp)
 
 
 
@@ -228,8 +231,8 @@ if __name__ == "__main__":  # checks a condition before next step
     main()  # shows this line as part of the example output
 ```
 
-![alt text](ss/image-9.webp)
-![alt text](ss/image-10.webp)
+![alt text](images/image-9.webp)
+![alt text](images/image-10.webp)
 
 ## Routing and Parameters
 
@@ -289,7 +292,7 @@ def get_post(id:int):  # declares a helper or endpoint function
 
 ```
 
-![alt text](ss/image-11.webp)
+![alt text](images/image-11.webp)
 
 ### Query Parameters
 
@@ -304,7 +307,7 @@ def get_all_posts(limit: int = None): # here parameter is written because FastAP
 ```
 
 
-![alt text](ss/image-12.webp)
+![alt text](images/image-12.webp)
 
 > FastAPI automatically validates all data going into and coming out of the function
 
@@ -407,10 +410,10 @@ def create_post(post_body: PostCreate) -> PostResponse : # validates incoming (P
     return new_post  # returns data to the API caller
 ```
 
-![alt text](ss/image-13.webp)
+![alt text](images/image-13.webp)
 
 try create post
-![alt text](ss/image-14.webp)
+![alt text](images/image-14.webp)
 
 access that post
 
@@ -937,36 +940,36 @@ async def get_feed(
 ```
 
 uploading sample document
-![alt text](ss/image-15.webp)
-![alt text](ss/image-16.webp)
+![alt text](images/image-15.webp)
+![alt text](images/image-16.webp)
 
 even if we exit application, db get saved, once we restart application, db gets restored !!!
 
 after reopning the application, db restored, and get api worked !!!
-![alt text](ss/image-17.webp)
+![alt text](images/image-17.webp)
 
 ---
 
 next part
 
 You can use External Storage
-![alt text](ss/image-18.webp)
-![alt text](ss/image-19.webp)
+![alt text](images/image-18.webp)
+![alt text](images/image-19.webp)
 
 But Rn, using Imagekit's DAM 
 
 - Use this doc: https://imagekit.io/docs/integration/python
 
-![alt text](ss/image-20.webp)
-![alt text](ss/image-21.webp)
-![alt text](ss/image-22.webp)
+![alt text](images/image-20.webp)
+![alt text](images/image-21.webp)
+![alt text](images/image-22.webp)
 
 schema not error
 
 Now Post Stored in DB and Image linked stored in DAM
-![alt text](ss/image-23.webp)
-![alt text](ss/image-24.webp)
-![alt text](ss/image-25.webp)
+![alt text](images/image-23.webp)
+![alt text](images/image-24.webp)
+![alt text](images/image-25.webp)
 
 ```bash
 pip install imagekitio
@@ -1177,12 +1180,12 @@ async def delete_post(
         raise HTTPException(status_code=500, detail=str(e))
 ```
 
-![alt text](ss/image-27.webp)
-![alt text](ss/image-28.webp)
+![alt text](images/image-27.webp)
+![alt text](images/image-28.webp)
 
 Deleted Success
 
-![alt text](ss/image-29.webp)
+![alt text](images/image-29.webp)
 
 Not won't shown in GET
 
@@ -1298,22 +1301,22 @@ Additionally, apply authorization logic within the function (e.g., verifying `po
 ### Code(s) — Authentication
 
 New Routes came out because of FastAPI Users
-![alt text](ss/image-30.webp)
+![alt text](images/image-30.webp)
 
 Register New USer
-![alt text](ss/image-31.webp)
-![alt text](ss/image-32.webp)
+![alt text](images/image-31.webp)
+![alt text](images/image-32.webp)
 ed791fc4-88c8-439b-9add-7ec66d18678e
 kintsugiprogrammer@gmail.com
 #ALS12345
 
-![alt text](ss/image-33.webp)
+![alt text](images/image-33.webp)
 
 Login
-![alt text](ss/image-34.webp)
+![alt text](images/image-34.webp)
 
 Logged in and got token, get used in any request
-![alt text](ss/image-35.webp)
+![alt text](images/image-35.webp)
 
 See Current User, and super long token associated in my request 
 
@@ -1321,11 +1324,11 @@ For protecting routes, i can add dependency that for forces router to get the cu
 
 after it
 
-![alt text](ss/image-36.webp)
+![alt text](images/image-36.webp)
 
 We can see other users posts, no ownership
 
-![alt text](ss/image-37.webp)
+![alt text](images/image-37.webp)
 
 Even if other user try to delete others, it will not be authorised
 
@@ -1704,7 +1707,7 @@ ImageKit allows real-time dynamic manipulation of files directly through query s
 *   **Text/Overlays**: Add captions via URL string overlays, modifying sizes using attributes like `font-size_100`.
 *   **Videos**: Output frames as thumbnails via appending `ik-thumbnail.jpg` (or requesting specific timeframes like 5 seconds in). Videos can also be cropped into vertical frames with blurred backgrounds, and drastically optimized (e.g., 90% quality compression makes files 3x smaller without major quality loss).
 
-![alt text](ss/image-26.webp)
+![alt text](images/image-26.webp)
 
 https://ik.imagekit.io/mwg1upyo1/products/image-6_mJSJ4dfaR.png to
 
@@ -1905,10 +1908,10 @@ else:
 ```
 
 
-![alt text](ss/image-38.webp)
+![alt text](images/image-38.webp)
 
-![alt text](ss/image-39.webp)
+![alt text](images/image-39.webp)
 
-![alt text](ss/image-40.webp)
+![alt text](images/image-40.webp)
 
-![alt text](ss/image-41.webp)
+![alt text](images/image-41.webp)
