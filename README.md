@@ -5,7 +5,7 @@
 
 > Full-Stack Media Sharing App: FastAPI, FastAPI Users, JWT, SQLAlchemy, ImageKit & Streamlit
 
-![alt text](images/unnamed.webp)
+![alt text](images/image-37.webp)
 
 ## Project Overview
 
@@ -1911,6 +1911,8 @@ else:
 ![alt text](images/image-40.webp)
 
 ![alt text](images/image-41.webp)
+
+![alt text](images/unnamed.webp)
 
 <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin-bottom: 1em;">
 <iframe src="https://www.youtube.com/embed/CUszilscEPU?si=TmXOSb1AEdIKJwF1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-origin-cross-origin" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
